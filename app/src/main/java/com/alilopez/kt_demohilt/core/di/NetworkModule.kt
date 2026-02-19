@@ -13,6 +13,7 @@ import javax.inject.Singleton
 object NetworkModule {
     @Provides
     @Singleton
+    @JsonPlaceHolderRetrofit
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://jsonplaceholder.typicode.com/")
