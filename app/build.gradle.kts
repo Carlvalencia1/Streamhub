@@ -43,9 +43,7 @@ android {
         resValues = true
     }
 
-    ksp {
-        arg("hilt.disableModulesHaveInstallInCheck", "true")
-    }
+
 
     flavorDimensions.add("environment")
     productFlavors {
@@ -64,11 +62,14 @@ android {
         }
     }
 }
-
 secrets {
     propertiesFileName = "local.properties"
     defaultPropertiesFileName = "local.defaults.properties"
     ignoreList.add("sdk.dir")
+}
+
+ksp {
+    arg("hilt.disableModulesHaveInstallInCheck", "true")
 }
 
 kotlin {
