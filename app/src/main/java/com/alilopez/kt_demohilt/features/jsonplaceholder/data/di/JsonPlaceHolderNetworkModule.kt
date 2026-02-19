@@ -1,5 +1,6 @@
 package com.alilopez.kt_demohilt.features.jsonplaceholder.data.di
 
+import com.alilopez.kt_demohilt.core.di.JsonPlaceHolderRetrofit
 import com.alilopez.kt_demohilt.features.jsonplaceholder.data.datasources.remote.api.JsonPlaceHolderApi
 import dagger.Module
 import dagger.Provides
@@ -13,7 +14,7 @@ import javax.inject.Singleton
     object JsonPlaceHolderNetworkModule {
         @Provides
         @Singleton
-        fun provideJsonPlaceHolderApi(retrofit: Retrofit): JsonPlaceHolderApi {
+        fun provideJsonPlaceHolderApi(@JsonPlaceHolderRetrofit retrofit: Retrofit): JsonPlaceHolderApi {
             return retrofit.create(JsonPlaceHolderApi::class.java)
         }
     }
