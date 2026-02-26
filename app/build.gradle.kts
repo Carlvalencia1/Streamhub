@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-    namespace = "com.alilopez.kt_demohilt"
+    namespace = "com.joaquin.kt_demohilt"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.alilopez.kt_demohilt"
+        applicationId = "com.joaquin.streamhub"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
