@@ -1,5 +1,7 @@
 package com.valencia.streamhub.features.users.data.datasources.remote.model
 
+import com.google.gson.annotations.SerializedName
+
 data class UserResponse(
     val id: String,
     val username: String,
@@ -31,3 +33,8 @@ data class RegisterResponse(
     val created_at: String? = null,
     val message: String? = null
 )
+
+data class MeResponse(
+    @SerializedName(value = "user_id", alternate = ["userId", "id", "ID"]) val userId: String
+)
+

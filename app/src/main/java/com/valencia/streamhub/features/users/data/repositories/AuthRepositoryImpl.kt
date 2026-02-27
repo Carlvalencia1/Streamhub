@@ -1,5 +1,7 @@
 package com.valencia.streamhub.features.users.data.repositories
 
+import android.util.Log
+import com.valencia.streamhub.core.session.TokenManager
 import com.valencia.streamhub.features.users.data.datasources.remote.AuthApiService
 import com.valencia.streamhub.features.users.data.datasources.remote.model.LoginRequest
 import com.valencia.streamhub.features.users.data.datasources.remote.model.RegisterRequest
@@ -9,12 +11,22 @@ import retrofit2.HttpException
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val authApiService: AuthApiService
+    private val authApiService: AuthApiService,
+    private val tokenManager: TokenManager
 ) : AuthRepository {
 
     override suspend fun login(email: String, password: String): AuthResult {
         return try {
             val response = authApiService.login(LoginRequest(email, password))
+            tokenManager.saveToken(response.token)
+            // Obtener y guardar el user_id del usuario logueado
+            try {
+                val me = authApiService.getMe()
+                tokenManager.saveUserId(me.userId)
+                Log.d("AuthRepo", "userId guardado: ${me.userId}")
+            } catch (e: Exception) {
+                Log.e("AuthRepo", "Error obteniendo /me: ${e.message}")
+            }
             AuthResult.Success(response.token)
         } catch (e: HttpException) {
             val errorBody = e.response()?.errorBody()?.string() ?: "Error HTTP ${e.code()}"
