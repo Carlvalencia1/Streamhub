@@ -8,5 +8,6 @@ interface StreamRepository {
     suspend fun createStream(title: String, description: String, thumbnail: String, category: String): StreamResult<Stream>
     suspend fun startStream(id: String): StreamResult<String>
     suspend fun joinStream(id: String): StreamResult<String>
+    suspend fun getPlaybackUrl(id: String): StreamResult<String>
 }
 

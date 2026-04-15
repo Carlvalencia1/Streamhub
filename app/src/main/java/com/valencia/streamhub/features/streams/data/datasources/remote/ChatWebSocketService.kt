@@ -24,19 +24,19 @@ enum class ConnectionState {
 class ChatWebSocketService @Inject constructor(
     private val okHttpClient: OkHttpClient,
     private val gson: Gson
-) {
+) : ChatRealtimeDataSource {
     private var webSocket: WebSocket? = null
 
     private val _messages = MutableSharedFlow<ChatMessageDto>(extraBufferCapacity = 64)
-    val messages: SharedFlow<ChatMessageDto> = _messages
+    override val messages: SharedFlow<ChatMessageDto> = _messages
 
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
-    val connectionState: StateFlow<ConnectionState> = _connectionState
+    override val connectionState: StateFlow<ConnectionState> = _connectionState
 
-    fun connect(streamId: String, token: String) {
+    override fun connect(streamId: String, token: String) {
         disconnect()
 
-        val url = "ws://10.0.2.2:8080/ws/chat/$streamId?token=$token"
+        val url = "ws://3.232.197.126:8081/ws/chat/$streamId?token=$token"
         Log.d("ChatWS", "Conectando a: $url")
 
         val request = Request.Builder()
@@ -53,7 +53,10 @@ class ChatWebSocketService @Inject constructor(
                 Log.d("ChatWS", "Mensaje recibido: $text")
                 try {
                     val dto = gson.fromJson(text, ChatMessageDto::class.java)
-                    if (dto.type == "message") {
+                    val normalizedType = dto.type?.lowercase()
+                    val hasContent = !dto.content.isNullOrBlank()
+                    val isMessageEvent = normalizedType == null || normalizedType in setOf("message", "chat_message", "new_message")
+                    if (hasContent && isMessageEvent) {
                         _messages.tryEmit(dto)
                     }
                 } catch (e: Exception) {
@@ -79,14 +82,14 @@ class ChatWebSocketService @Inject constructor(
         })
     }
 
-    fun sendMessage(content: String) {
+    override fun sendMessage(content: String): Boolean {
         val message = SendMessageDto(content = content)
         val json = gson.toJson(message)
         Log.d("ChatWS", "Enviando: $json")
-        webSocket?.send(json)
+        return webSocket?.send(json) == true
     }
 
-    fun disconnect() {
+    override fun disconnect() {
         webSocket?.close(1000, "Usuario salió")
         webSocket = null
         _connectionState.value = ConnectionState.DISCONNECTED

@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 fun CreateStreamScreen(
     onBack: () -> Unit,
     onCreated: () -> Unit,
+    onNavigateToBroadcasting: (String) -> Unit = {},
     viewModel: StreamViewModel = hiltViewModel()
 ) {
     val state by viewModel.streamState.collectAsStateWithLifecycle()
@@ -51,10 +52,15 @@ fun CreateStreamScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(state.isCreated) {
+    LaunchedEffect(state.isCreated, state.createdStreamId) {
         if (state.isCreated) {
+            val newStreamId = state.createdStreamId
             viewModel.resetCreated()
-            onCreated()
+            if (!newStreamId.isNullOrBlank()) {
+                onNavigateToBroadcasting(newStreamId)
+            } else {
+                onCreated()
+            }
         }
     }
 

@@ -23,10 +23,20 @@ data class CreateStreamRequest(
 )
 
 data class StartStreamResponse(
-    @SerializedName("message") val message: String
+    @SerializedName("message") val message: String,
+    @SerializedName("playback_url") val playbackUrl: String? = null
 )
 
 data class JoinStreamResponse(
-    @SerializedName("message") val message: String
+    @SerializedName("message") val message: String,
+    @SerializedName("playback_url") val playbackUrl: String? = null
+)
+
+data class PlaybackResponse(
+    @SerializedName("stream_id") val streamId: String,
+    @SerializedName("stream_key") val streamKey: String? = null,
+    @SerializedName("playback_url") val playbackUrl: String? = null,
+    @SerializedName("type") val type: String? = null,
+    @SerializedName("is_live") val isLive: Boolean = false
 )
 

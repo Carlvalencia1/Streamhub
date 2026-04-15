@@ -18,8 +18,8 @@ class ConnectToChatUseCase @Inject constructor(
 class SendChatMessageUseCase @Inject constructor(
     private val chatRepository: ChatRepository
 ) {
-    operator fun invoke(content: String) {
-        chatRepository.sendMessage(content)
+    operator fun invoke(content: String): Boolean {
+        return chatRepository.sendMessage(content)
     }
 }
 

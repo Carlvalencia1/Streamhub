@@ -7,7 +7,9 @@ plugins {
     // Activa Hilt y KSP
     alias(libs.plugins.devtools.ksp)
     alias(libs.plugins.hilt.android)
+    id("com.google.gms.google-services")
 }
+
 
 android {
     namespace = "com.valencia.streamhub"
@@ -98,11 +100,31 @@ dependencies {
     implementation(libs.hilt.android)                               // Implementación de Hilt
     implementation(libs.hilt.navigation.compose)                    // Integración con Jetpack Compose
     ksp(libs.hilt.compiler)                                         // KSP
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.camera.core)
+    implementation(libs.camera.camera2)
+    implementation(libs.camera.lifecycle)
+    implementation(libs.lifecycle.process)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.exoplayer.hls)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation("io.github.webrtc-sdk:android:125.6422.07")
+    
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-analytics")
 
 
     testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)

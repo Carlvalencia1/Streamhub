@@ -2,6 +2,7 @@ package com.valencia.streamhub.features.streams.data.datasources.remote
 
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.CreateStreamRequest
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.JoinStreamResponse
+import com.valencia.streamhub.features.streams.data.datasources.remote.model.PlaybackResponse
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.StartStreamResponse
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.StreamResponse
 import retrofit2.http.Body
@@ -23,5 +24,8 @@ interface StreamApiService {
 
     @POST("api/streams/{id}/join")
     suspend fun joinStream(@Path("id") id: String): JoinStreamResponse
+
+    @GET("api/streams/{id}/playback")
+    suspend fun getPlayback(@Path("id") id: String): PlaybackResponse
 }
 

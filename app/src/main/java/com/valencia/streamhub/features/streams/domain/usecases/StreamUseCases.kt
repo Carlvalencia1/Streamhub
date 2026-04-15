@@ -42,3 +42,11 @@ class JoinStreamUseCase @Inject constructor(
     }
 }
 
+class GetPlaybackUrlUseCase @Inject constructor(
+    private val streamRepository: StreamRepository
+) {
+    suspend operator fun invoke(id: String): StreamResult<String> {
+        return streamRepository.getPlaybackUrl(id)
+    }
+}
+

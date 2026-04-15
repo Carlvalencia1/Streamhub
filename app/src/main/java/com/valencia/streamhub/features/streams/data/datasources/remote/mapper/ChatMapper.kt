@@ -4,7 +4,8 @@ import com.valencia.streamhub.features.streams.data.datasources.remote.model.Cha
 import com.valencia.streamhub.features.streams.domain.entities.ChatMessage
 
 fun ChatMessageDto.toDomain(currentUserId: String?): ChatMessage = ChatMessage(
-    id = id ?: "",
+    id = id?.takeIf { it.isNotBlank() }
+        ?: listOfNotNull(createdAt, userId, content).joinToString("-").ifBlank { "local-${System.nanoTime()}" },
     userId = userId ?: "",
     username = username ?: "Anónimo",
     content = content ?: "",

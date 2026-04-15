@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.valencia.streamhub.features.streams.domain.entities.Stream
 import com.valencia.streamhub.features.streams.domain.entities.StreamResult
 import com.valencia.streamhub.features.streams.domain.usecases.CreateStreamUseCase
+import com.valencia.streamhub.features.streams.domain.usecases.GetPlaybackUrlUseCase
 import com.valencia.streamhub.features.streams.domain.usecases.GetStreamsUseCase
 import com.valencia.streamhub.features.streams.domain.usecases.JoinStreamUseCase
 import com.valencia.streamhub.features.streams.domain.usecases.StartStreamUseCase
@@ -21,7 +22,11 @@ data class StreamState(
     val error: String? = null,
     val isCreated: Boolean = false,
     val isStarted: Boolean = false,
-    val isJoined: Boolean = false
+    val isJoined: Boolean = false,
+    val createdStreamId: String? = null,
+    val playbackUrl: String? = null,
+    val isPlaybackLoading: Boolean = false,
+    val playbackError: String? = null
 )
 
 @HiltViewModel
@@ -30,6 +35,7 @@ class StreamViewModel @Inject constructor(
     private val createStreamUseCase: CreateStreamUseCase,
     private val startStreamUseCase: StartStreamUseCase,
     private val joinStreamUseCase: JoinStreamUseCase,
+    private val getPlaybackUrlUseCase: GetPlaybackUrlUseCase,
     private val tokenManager: TokenManager
 ) : ViewModel() {
 
@@ -69,19 +75,26 @@ class StreamViewModel @Inject constructor(
 
     fun createStream(title: String, description: String, thumbnail: String, category: String) {
         viewModelScope.launch {
-            _streamState.value = _streamState.value.copy(isLoading = true, error = null, isCreated = false)
+            _streamState.value = _streamState.value.copy(
+                isLoading = true,
+                error = null,
+                isCreated = false,
+                createdStreamId = null
+            )
             when (val result = createStreamUseCase(title, description, thumbnail, category)) {
                 is StreamResult.Success -> {
                     _streamState.value = _streamState.value.copy(
                         isLoading = false,
-                        isCreated = true
+                        isCreated = true,
+                        createdStreamId = result.data.id
                     )
                     loadStreams()
                 }
                 is StreamResult.Error -> {
                     _streamState.value = _streamState.value.copy(
                         isLoading = false,
-                        error = result.message
+                        error = result.message,
+                        createdStreamId = null
                     )
                 }
                 else -> {}
@@ -116,7 +129,7 @@ class StreamViewModel @Inject constructor(
     }
 
     fun resetCreated() {
-        _streamState.value = _streamState.value.copy(isCreated = false)
+        _streamState.value = _streamState.value.copy(isCreated = false, createdStreamId = null)
     }
 
     fun joinStream(id: String) {
@@ -139,6 +152,36 @@ class StreamViewModel @Inject constructor(
                 else -> {}
             }
         }
+    }
+
+    fun loadPlaybackUrl(streamId: String) {
+        if (streamId.isBlank()) return
+        viewModelScope.launch {
+            _streamState.value = _streamState.value.copy(
+                isPlaybackLoading = true,
+                playbackError = null,
+                playbackUrl = null
+            )
+            when (val result = getPlaybackUrlUseCase(streamId)) {
+                is StreamResult.Success -> {
+                    _streamState.value = _streamState.value.copy(
+                        isPlaybackLoading = false,
+                        playbackUrl = result.data
+                    )
+                }
+                is StreamResult.Error -> {
+                    _streamState.value = _streamState.value.copy(
+                        isPlaybackLoading = false,
+                        playbackError = result.message
+                    )
+                }
+                else -> Unit
+            }
+        }
+    }
+
+    fun clearPlaybackError() {
+        _streamState.value = _streamState.value.copy(playbackError = null)
     }
 }
 

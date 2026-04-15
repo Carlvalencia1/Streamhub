@@ -3,6 +3,7 @@ package com.valencia.streamhub.features.streams.presentation.viewmodels
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.valencia.streamhub.core.session.TokenManager
 import com.valencia.streamhub.features.streams.data.datasources.remote.ConnectionState
 import com.valencia.streamhub.features.streams.domain.entities.ChatMessage
 import com.valencia.streamhub.features.streams.domain.usecases.ConnectToChatUseCase
@@ -24,13 +25,17 @@ data class ChatState(
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val tokenManager: TokenManager,
     private val connectToChatUseCase: ConnectToChatUseCase,
     private val sendChatMessageUseCase: SendChatMessageUseCase,
     private val disconnectChatUseCase: DisconnectChatUseCase,
     private val observeChatConnectionUseCase: ObserveChatConnectionUseCase
 ) : ViewModel() {
 
-    private val streamId: String = savedStateHandle["streamId"] ?: ""
+    private val streamId: String =
+        savedStateHandle.get<String>("streamId")
+            ?: savedStateHandle.get<String>("stream_id")
+            ?: ""
 
     private val _chatState = MutableStateFlow(ChatState())
     val chatState = _chatState.asStateFlow()
@@ -38,25 +43,56 @@ class ChatViewModel @Inject constructor(
     init {
         if (streamId.isNotEmpty()) {
             connectToChat()
+        } else {
+            _chatState.value = _chatState.value.copy(
+                error = "Stream ID no disponible"
+            )
         }
     }
 
     private fun connectToChat() {
+        val token = tokenManager.getToken()
+        if (token.isNullOrBlank()) {
+            android.util.Log.e("ChatViewModel", "Token es nulo o vacio")
+            _chatState.value = _chatState.value.copy(
+                error = "Token no disponible. Por favor inicia sesión de nuevo."
+            )
+            return
+        }
+
+        android.util.Log.d("ChatViewModel", "Iniciando conexión al chat con streamId: $streamId")
+
         // Observar estado de conexión
         viewModelScope.launch {
-            observeChatConnectionUseCase().collect { state ->
+            runCatching {
+                observeChatConnectionUseCase().collect { state ->
+                    android.util.Log.d("ChatViewModel", "Estado conexión: $state")
+                    _chatState.value = _chatState.value.copy(
+                        isConnected = state == ConnectionState.CONNECTED,
+                        error = if (state == ConnectionState.ERROR) "Error de conexión" else null
+                    )
+                }
+            }.onFailure { e ->
+                android.util.Log.e("ChatViewModel", "Error observando conexión", e)
                 _chatState.value = _chatState.value.copy(
-                    isConnected = state == ConnectionState.CONNECTED,
-                    error = if (state == ConnectionState.ERROR) "Error de conexión" else null
+                    error = "Error observando conexión: ${e.message}"
                 )
             }
         }
 
         // Escuchar mensajes
         viewModelScope.launch {
-            connectToChatUseCase(streamId).collect { message ->
+            runCatching {
+                connectToChatUseCase(streamId).collect { message ->
+                    android.util.Log.d("ChatViewModel", "Mensaje recibido: ${message.id}")
+                    _chatState.value = _chatState.value.copy(
+                        messages = _chatState.value.messages + message
+                    )
+                }
+            }.onFailure { e ->
+                android.util.Log.e("ChatViewModel", "Error conectando al chat", e)
                 _chatState.value = _chatState.value.copy(
-                    messages = _chatState.value.messages + message
+                    error = "Error conectando al chat: ${e.message}"
                 )
             }
         }
@@ -64,7 +100,18 @@ class ChatViewModel @Inject constructor(
 
     fun sendMessage(content: String) {
         if (content.isNotBlank()) {
-            sendChatMessageUseCase(content.trim())
+            runCatching {
+                val sent = sendChatMessageUseCase(content.trim())
+                if (!sent) {
+                    _chatState.value = _chatState.value.copy(
+                        error = "No se pudo enviar el mensaje. Verifica la conexión o vuelve a iniciar sesión."
+                    )
+                }
+            }.onFailure { e ->
+                _chatState.value = _chatState.value.copy(
+                    error = "Error al enviar: ${e.message}"
+                )
+            }
         }
     }
 

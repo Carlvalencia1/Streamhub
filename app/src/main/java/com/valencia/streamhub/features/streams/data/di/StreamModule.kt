@@ -1,6 +1,7 @@
 package com.valencia.streamhub.features.streams.data.di
 
 import com.valencia.streamhub.core.di.StreamhubRetrofit
+import com.valencia.streamhub.features.streams.data.datasources.local.StreamLocalDataSource
 import com.valencia.streamhub.features.streams.data.datasources.remote.StreamApiService
 import com.valencia.streamhub.features.streams.data.repositories.StreamRepositoryImpl
 import com.valencia.streamhub.features.streams.domain.repositories.StreamRepository
@@ -23,8 +24,11 @@ object StreamModule {
 
     @Singleton
     @Provides
-    fun provideStreamRepository(streamApiService: StreamApiService): StreamRepository {
-        return StreamRepositoryImpl(streamApiService)
+    fun provideStreamRepository(
+        streamApiService: StreamApiService,
+        streamLocalDataSource: StreamLocalDataSource
+    ): StreamRepository {
+        return StreamRepositoryImpl(streamApiService, streamLocalDataSource)
     }
 }
 

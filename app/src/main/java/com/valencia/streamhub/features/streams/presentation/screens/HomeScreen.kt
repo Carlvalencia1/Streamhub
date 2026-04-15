@@ -9,10 +9,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -28,8 +30,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.valencia.streamhub.features.streams.presentation.components.StreamCard
 import com.valencia.streamhub.features.streams.presentation.viewmodels.StreamViewModel
 
@@ -37,6 +39,7 @@ import com.valencia.streamhub.features.streams.presentation.viewmodels.StreamVie
 @Composable
 fun HomeScreen(
     onNavigateToCreate: () -> Unit,
+    onNavigateToHardware: () -> Unit = {},
     onNavigateToStream: (String) -> Unit = {},
     viewModel: StreamViewModel = hiltViewModel()
 ) {
@@ -66,6 +69,14 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Streams") },
+                actions = {
+                    IconButton(onClick = onNavigateToHardware) {
+                        Icon(
+                            imageVector = Icons.Default.Memory,
+                            contentDescription = "Abrir hardware"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -112,7 +123,10 @@ fun HomeScreen(
                             StreamCard(
                                 stream = stream,
                                 currentUserId = currentUserId,
-                                onStartClick = { id -> viewModel.startStream(id) },
+                                onStartClick = { id ->
+                                    viewModel.startStream(id)
+                                    onNavigateToStream(id)
+                                },
                                 onJoinClick = { id -> onNavigateToStream(id) }
                             )
                         }

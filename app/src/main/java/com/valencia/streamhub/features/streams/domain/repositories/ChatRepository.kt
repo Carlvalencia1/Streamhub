@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ChatRepository {
     fun connect(streamId: String): Flow<ChatMessage>
-    fun sendMessage(content: String)
+    fun sendMessage(content: String): Boolean
     fun disconnect()
     fun observeConnectionState(): StateFlow<ConnectionState>
 }

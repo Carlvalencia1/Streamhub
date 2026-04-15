@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "552804809383",
+    "project_id": "streamhub-64704",
+    "storage_bucket": "streamhub-64704.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552804809383:android:e5a3a319a79307777db982",
+        "android_client_info": {
+          "package_name": "com.streamhub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9WdHDt_XM_1GnlCnNWBwXebkWcb5DY6k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552804809383:android:33e3331328353fd57db982",
+        "android_client_info": {
+          "package_name": "com.valencia.streamhub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9WdHDt_XM_1GnlCnNWBwXebkWcb5DY6k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
