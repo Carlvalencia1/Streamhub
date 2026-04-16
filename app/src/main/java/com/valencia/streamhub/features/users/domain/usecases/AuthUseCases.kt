@@ -7,20 +7,27 @@ import javax.inject.Inject
 class LoginUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {
-    suspend operator fun invoke(email: String, password: String): AuthResult {
-        return authRepository.login(email, password)
-    }
+    suspend operator fun invoke(email: String, password: String): AuthResult =
+        authRepository.login(email, password)
 }
 
 class RegisterUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {
-    suspend operator fun invoke(
-        username: String,
-        email: String,
-        password: String
-    ): AuthResult {
-        return authRepository.register(username, email, password)
-    }
+    suspend operator fun invoke(username: String, email: String, password: String): AuthResult =
+        authRepository.register(username, email, password)
 }
 
+class GoogleLoginUseCase @Inject constructor(
+    private val authRepository: AuthRepository
+) {
+    suspend operator fun invoke(idToken: String): AuthResult =
+        authRepository.loginWithGoogle(idToken)
+}
+
+class UpdateProfileUseCase @Inject constructor(
+    private val authRepository: AuthRepository
+) {
+    suspend operator fun invoke(nickname: String?, bio: String?, location: String?): AuthResult =
+        authRepository.updateProfile(nickname, bio, location)
+}

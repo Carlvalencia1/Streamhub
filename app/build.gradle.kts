@@ -7,6 +7,7 @@ plugins {
     // Activa Hilt y KSP
     alias(libs.plugins.devtools.ksp)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -101,6 +102,13 @@ dependencies {
     implementation(libs.room.runtime)                               // Room
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+    implementation(platform(libs.firebase.bom))                    // Firebase BOM
+    implementation(libs.firebase.messaging)                        // FCM
+    implementation(libs.work.runtime.ktx)                          // WorkManager
+    implementation(libs.stream.webrtc)                             // WebRTC
+    implementation(libs.credentials)                               // Credential Manager
+    implementation(libs.credentials.play.services.auth)            // Google Play Services Auth
+    implementation(libs.google.identity.googleid)                  // Google ID
 
 
     testImplementation(libs.junit)

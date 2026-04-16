@@ -26,6 +26,8 @@ fun Stream.toEntity(): StreamEntity = StreamEntity(
     viewersCount = viewersCount,
     isLive = isLive,
     startedAt = startedAt,
-    createdAt = createdAt
+    createdAt = createdAt,
+    streamKey = "",
+    playbackUrl = ""
 )
 
