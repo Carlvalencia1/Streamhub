@@ -90,5 +90,6 @@ fun AppNavGraph(
                 chatViewModel = chatViewModel
             )
         }
+
     }
 }
