@@ -1,20 +1,11 @@
 package com.valencia.streamhub.core.database.entities
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "streams",
-    foreignKeys = [
-        ForeignKey(
-            entity = UserEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["ownerId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ],
     indices = [Index("ownerId")]
 )
 data class StreamEntity(

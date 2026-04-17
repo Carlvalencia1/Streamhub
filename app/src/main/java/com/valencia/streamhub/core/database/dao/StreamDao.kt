@@ -26,6 +26,9 @@ interface StreamDao {
     @Query("SELECT * FROM streams ORDER BY createdAt DESC")
     fun observeAll(): Flow<List<StreamEntity>>
 
+    @Query("SELECT * FROM streams ORDER BY createdAt DESC")
+    suspend fun getStreamsSnapshot(): List<StreamEntity>
+
     @Query("SELECT * FROM streams WHERE isLive = 1 ORDER BY viewersCount DESC")
     fun observeLive(): Flow<List<StreamEntity>>
 

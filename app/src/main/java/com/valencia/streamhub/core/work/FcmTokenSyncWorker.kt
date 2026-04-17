@@ -11,6 +11,13 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 class FcmTokenSyncWorker(
@@ -18,25 +25,53 @@ class FcmTokenSyncWorker(
     params: WorkerParameters,
 ) : CoroutineWorker(appContext, params) {
 
-    override suspend fun doWork(): Result {
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val token = inputData.getString(KEY_TOKEN).orEmpty()
         if (token.isBlank()) {
             Log.w(TAG, "Token FCM vacio. No se sincroniza.")
-            return Result.failure()
+            return@withContext Result.failure()
         }
 
         val prefs = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val lastSyncedToken = prefs.getString(KEY_LAST_SYNCED_TOKEN, null)
         if (lastSyncedToken == token) {
             Log.d(TAG, "Token FCM ya sincronizado. Se omite envio.")
-            return Result.success()
+            return@withContext Result.success()
         }
 
-        return try {
-            // TODO: Reemplazar por llamada real al backend (Retrofit).
-            Log.d(TAG, "Sincronizando token FCM (mock): $token")
-            prefs.edit().putString(KEY_LAST_SYNCED_TOKEN, token).apply()
-            Result.success()
+        val authToken = applicationContext
+            .getSharedPreferences("streamhub_prefs", Context.MODE_PRIVATE)
+            .getString("auth_token", null)
+
+        if (authToken.isNullOrBlank()) {
+            Log.w(TAG, "Sin token de auth. Se reintentara despues.")
+            return@withContext Result.retry()
+        }
+
+        return@withContext try {
+            val json = JSONObject().apply {
+                put("token", token)
+                put("platform", "android")
+            }.toString()
+
+            val body = json.toRequestBody("application/json".toMediaType())
+            val request = Request.Builder()
+                .url("http://3.232.197.126:8081/api/notifications/fcm-token")
+                .addHeader("Authorization", "Bearer $authToken")
+                .post(body)
+                .build()
+
+            val client = OkHttpClient()
+            val response = client.newCall(request).execute()
+
+            if (response.isSuccessful) {
+                Log.d(TAG, "Token FCM registrado en backend.")
+                prefs.edit().putString(KEY_LAST_SYNCED_TOKEN, token).apply()
+                Result.success()
+            } else {
+                Log.w(TAG, "Error del backend al registrar token: ${response.code}")
+                Result.retry()
+            }
         } catch (t: Throwable) {
             Log.e(TAG, "Error sincronizando token FCM", t)
             Result.retry()
@@ -73,4 +108,3 @@ class FcmTokenSyncWorker(
         }
     }
 }
-

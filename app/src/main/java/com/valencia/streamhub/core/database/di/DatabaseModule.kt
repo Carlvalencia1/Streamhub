@@ -3,6 +3,7 @@ package com.valencia.streamhub.core.database.di
 import android.content.Context
 import androidx.room.Room
 import com.valencia.streamhub.core.database.AppDatabase
+import com.valencia.streamhub.core.database.dao.ChatMessageDao
 import com.valencia.streamhub.core.database.dao.DeviceTokenDao
 import com.valencia.streamhub.core.database.dao.MessageDao
 import com.valencia.streamhub.core.database.dao.StreamDao
@@ -36,4 +37,7 @@ object DatabaseModule {
 
     @Provides
     fun provideDeviceTokenDao(db: AppDatabase): DeviceTokenDao = db.deviceTokenDao()
+
+    @Provides
+    fun provideChatMessageDao(db: AppDatabase): ChatMessageDao = db.chatMessageDao()
 }

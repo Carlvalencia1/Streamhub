@@ -21,6 +21,9 @@ interface StreamApiService {
     @PUT("api/streams/{id}/start")
     suspend fun startStream(@Path("id") id: String): StartStreamResponse
 
+    @PUT("api/streams/{id}/stop")
+    suspend fun stopStream(@Path("id") id: String): StartStreamResponse
+
     @POST("api/streams/{id}/join")
     suspend fun joinStream(@Path("id") id: String): JoinStreamResponse
 }

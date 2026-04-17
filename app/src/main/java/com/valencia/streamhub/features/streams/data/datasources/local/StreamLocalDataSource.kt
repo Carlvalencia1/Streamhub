@@ -8,12 +8,12 @@ import javax.inject.Inject
 class StreamLocalDataSource @Inject constructor(
     private val streamDao: StreamDao
 ) {
-    fun observeStreams(): Flow<List<StreamEntity>> = streamDao.observeStreams()
+    fun observeStreams(): Flow<List<StreamEntity>> = streamDao.observeAll()
 
     suspend fun getStreamsSnapshot(): List<StreamEntity> = streamDao.getStreamsSnapshot()
 
     suspend fun replaceAll(streams: List<StreamEntity>) {
-        streamDao.clearAll()
+        streamDao.deleteAll()
         streamDao.upsertAll(streams)
     }
 

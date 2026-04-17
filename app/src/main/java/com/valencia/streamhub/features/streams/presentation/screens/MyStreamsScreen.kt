@@ -114,6 +114,7 @@ fun MyStreamsScreen(
                                 stream = stream,
                                 currentUserId = currentUserId,
                                 onStartClick = { id -> viewModel.startStream(id) },
+                                onStopClick = { id -> viewModel.stopStream(id) },
                                 onJoinClick = { id -> onNavigateToStream(id) }
                             )
                         }

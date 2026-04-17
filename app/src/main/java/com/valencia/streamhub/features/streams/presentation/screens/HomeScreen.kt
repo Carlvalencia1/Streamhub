@@ -61,6 +61,11 @@ fun HomeScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val currentUserId = viewModel.currentUserId
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val isStreamer = remember {
+        context.getSharedPreferences("streamhub_prefs", android.content.Context.MODE_PRIVATE)
+            .getString("user_role", "") == "streamer"
+    }
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state.error) {
@@ -85,8 +90,10 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToCreate) {
-                Icon(Icons.Default.Add, contentDescription = "Crear stream")
+            if (isStreamer) {
+                FloatingActionButton(onClick = onNavigateToCreate) {
+                    Icon(Icons.Default.Add, contentDescription = "Crear stream")
+                }
             }
         },
         snackbarHost = {
@@ -202,6 +209,7 @@ fun HomeScreen(
                                     stream = stream,
                                     currentUserId = currentUserId,
                                     onStartClick = { id -> viewModel.startStream(id) },
+                                    onStopClick = { id -> viewModel.stopStream(id) },
                                     onJoinClick = { id -> onNavigateToStream(id) }
                                 )
                             }
