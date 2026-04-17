@@ -31,3 +31,10 @@ class UpdateProfileUseCase @Inject constructor(
     suspend operator fun invoke(nickname: String?, bio: String?, location: String?): AuthResult =
         authRepository.updateProfile(nickname, bio, location)
 }
+
+class SetRoleUseCase @Inject constructor(
+    private val authRepository: AuthRepository
+) {
+    suspend operator fun invoke(role: String): AuthResult =
+        authRepository.setRole(role)
+}

@@ -28,8 +28,11 @@ data class LoginResponse(
 data class RegisterRequest(
     val username: String,
     val email: String,
-    val password: String
+    val password: String,
+    val role: String = "viewer"
 )
+
+data class SetRoleRequest(val role: String)
 
 data class RegisterResponse(
     val id: String? = null,
@@ -48,7 +51,8 @@ data class MeResponse(
     val location: String? = null,
     @SerializedName("avatar_url") val avatarUrl: String? = null,
     @SerializedName("followers_count") val followersCount: Int = 0,
-    @SerializedName("following_count") val followingCount: Int = 0
+    @SerializedName("following_count") val followingCount: Int = 0,
+    val role: String? = null
 )
 
 data class GoogleAuthRequest(

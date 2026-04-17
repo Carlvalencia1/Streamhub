@@ -11,6 +11,7 @@ import com.valencia.streamhub.features.streams.domain.usecases.CreateStreamUseCa
 import com.valencia.streamhub.features.streams.domain.usecases.GetStreamsUseCase
 import com.valencia.streamhub.features.streams.domain.usecases.JoinStreamUseCase
 import com.valencia.streamhub.features.streams.domain.usecases.StartStreamUseCase
+import com.valencia.streamhub.features.streams.domain.usecases.StopStreamUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,6 +29,7 @@ data class StreamState(
     val error: String? = null,
     val isCreated: Boolean = false,
     val isStarted: Boolean = false,
+    val isStopped: Boolean = false,
     val isJoined: Boolean = false
 )
 
@@ -36,6 +38,7 @@ class StreamViewModel @Inject constructor(
     private val getStreamsUseCase: GetStreamsUseCase,
     private val createStreamUseCase: CreateStreamUseCase,
     private val startStreamUseCase: StartStreamUseCase,
+    private val stopStreamUseCase: StopStreamUseCase,
     private val joinStreamUseCase: JoinStreamUseCase,
     private val tokenManager: TokenManager,
     private val streamDao: StreamDao
@@ -90,6 +93,9 @@ class StreamViewModel @Inject constructor(
                         streams = result.data
                     )
                     streamDao.upsertAll(result.data.map { it.toEntity() })
+                    val myId = tokenManager.getUserId() ?: ""
+                    val myCount = result.data.count { it.ownerId == myId }
+                    if (myCount > 0) tokenManager.saveStreamCount(myCount)
                 }
                 is StreamResult.Error -> {
                     _streamState.value = _streamState.value.copy(
@@ -127,6 +133,22 @@ class StreamViewModel @Inject constructor(
             when (val result = startStreamUseCase(id)) {
                 is StreamResult.Success -> {
                     _streamState.value = _streamState.value.copy(isLoading = false, isStarted = true)
+                    loadStreams()
+                }
+                is StreamResult.Error -> {
+                    _streamState.value = _streamState.value.copy(isLoading = false, error = result.message)
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun stopStream(id: String) {
+        viewModelScope.launch {
+            _streamState.value = _streamState.value.copy(isLoading = true, error = null, isStopped = false)
+            when (val result = stopStreamUseCase(id)) {
+                is StreamResult.Success -> {
+                    _streamState.value = _streamState.value.copy(isLoading = false, isStopped = true)
                     loadStreams()
                 }
                 is StreamResult.Error -> {

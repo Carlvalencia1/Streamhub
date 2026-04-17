@@ -56,6 +56,18 @@ class StreamRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun stopStream(id: String): StreamResult<String> {
+        return try {
+            val response = streamApiService.stopStream(id)
+            StreamResult.Success(response.message)
+        } catch (e: HttpException) {
+            val errorBody = e.response()?.errorBody()?.string() ?: "Error HTTP ${e.code()}"
+            StreamResult.Error("Error ${e.code()}: $errorBody")
+        } catch (e: Exception) {
+            StreamResult.Error(e.message ?: "Error desconocido")
+        }
+    }
+
     override suspend fun joinStream(id: String): StreamResult<String> {
         return try {
             val response = streamApiService.joinStream(id)

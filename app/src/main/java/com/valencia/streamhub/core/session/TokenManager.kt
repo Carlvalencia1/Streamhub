@@ -37,7 +37,6 @@ class TokenManager @Inject constructor(
     fun saveAvatarUrl(url: String) = prefs.edit().putString(KEY_AVATAR_URL, url).apply()
     fun getAvatarUrl(): String? = prefs.getString(KEY_AVATAR_URL, null)
 
-    // URI local de foto seleccionada desde galería
     fun saveLocalAvatarUri(uri: String) = prefs.edit().putString(KEY_LOCAL_AVATAR_URI, uri).apply()
     fun getLocalAvatarUri(): String? = prefs.getString(KEY_LOCAL_AVATAR_URI, null)
 
@@ -46,6 +45,12 @@ class TokenManager @Inject constructor(
 
     fun saveFollowingCount(count: Int) = prefs.edit().putInt(KEY_FOLLOWING, count).apply()
     fun getFollowingCount(): Int = prefs.getInt(KEY_FOLLOWING, 0)
+
+    fun saveRole(role: String) = prefs.edit().putString(KEY_ROLE, role).apply()
+    fun getRole(): String = prefs.getString(KEY_ROLE, "") ?: ""
+
+    fun saveStreamCount(count: Int) = prefs.edit().putInt(KEY_STREAM_COUNT, count).apply()
+    fun getStreamCount(): Int = prefs.getInt(KEY_STREAM_COUNT, 0)
 
     fun clearToken() = prefs.edit().remove(KEY_TOKEN).remove(KEY_USER_ID).apply()
 
@@ -63,5 +68,7 @@ class TokenManager @Inject constructor(
         private const val KEY_LOCAL_AVATAR_URI = "local_avatar_uri"
         private const val KEY_FOLLOWERS = "followers_count"
         private const val KEY_FOLLOWING = "following_count"
+        private const val KEY_ROLE = "user_role"
+        private const val KEY_STREAM_COUNT = "stream_count"
     }
 }

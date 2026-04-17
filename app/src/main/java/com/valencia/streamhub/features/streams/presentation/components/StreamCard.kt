@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -33,6 +34,7 @@ fun StreamCard(
     stream: Stream,
     currentUserId: String?,
     onStartClick: (String) -> Unit,
+    onStopClick: (String) -> Unit,
     onJoinClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -111,7 +113,26 @@ fun StreamCard(
                 }
             }
 
-            if (stream.isLive) {
+            if (stream.isLive && isOwner) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { onStopClick(stream.id) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Stop,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Terminar stream")
+                }
+            }
+
+            if (stream.isLive && !isOwner) {
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = { onJoinClick(stream.id) },

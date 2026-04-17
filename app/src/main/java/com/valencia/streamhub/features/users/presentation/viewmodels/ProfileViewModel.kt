@@ -34,6 +34,8 @@ class ProfileViewModel @Inject constructor(
     val location: String get() = tokenManager.getLocation() ?: ""
     val followersCount: Int get() = tokenManager.getFollowersCount()
     val followingCount: Int get() = tokenManager.getFollowingCount()
+    val role: String get() = tokenManager.getRole()
+    val streamCount: Int get() = tokenManager.getStreamCount()
 
     // La foto efectiva: primero URI local, luego URL remota
     val effectiveAvatarUri: String?

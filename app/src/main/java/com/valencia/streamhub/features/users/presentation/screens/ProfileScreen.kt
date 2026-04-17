@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -80,7 +82,6 @@ fun ProfileScreen(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri != null) {
-            // Tomar permiso persistente para poder releer el URI después de reiniciar
             try {
                 context.contentResolver.takePersistableUriPermission(
                     uri,
@@ -124,7 +125,6 @@ fun ProfileScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Cabecera
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -135,7 +135,6 @@ fun ProfileScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Avatar con botón de cámara encima
                     Box(contentAlignment = Alignment.BottomEnd) {
                         Box(
                             modifier = Modifier
@@ -166,7 +165,6 @@ fun ProfileScreen(
                             }
                         }
 
-                        // Ícono de cámara
                         Box(
                             modifier = Modifier
                                 .size(30.dp)
@@ -211,10 +209,26 @@ fun ProfileScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
                     )
+
+                    if (viewModel.role.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        AssistChip(
+                            onClick = {},
+                            label = {
+                                Text(
+                                    text = if (viewModel.role == "streamer") "Streamer" else "Viewer",
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            },
+                            colors = AssistChipDefaults.assistChipColors(
+                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                labelColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    }
                 }
             }
 
-            // Stats
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -233,13 +247,12 @@ fun ProfileScreen(
                     StatDivider()
                     StatItem(count = viewModel.followingCount, label = "Siguiendo")
                     StatDivider()
-                    StatItem(count = 0, label = "Streams")
+                    StatItem(count = viewModel.streamCount, label = "Streams")
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Bio y ubicación
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -291,7 +304,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Ajustes
             Card(
                 modifier = Modifier
                     .fillMaxWidth()

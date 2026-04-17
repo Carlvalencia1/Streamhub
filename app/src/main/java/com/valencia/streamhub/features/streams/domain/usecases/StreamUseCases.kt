@@ -34,6 +34,14 @@ class StartStreamUseCase @Inject constructor(
     }
 }
 
+class StopStreamUseCase @Inject constructor(
+    private val streamRepository: StreamRepository
+) {
+    suspend operator fun invoke(id: String): StreamResult<String> {
+        return streamRepository.stopStream(id)
+    }
+}
+
 class JoinStreamUseCase @Inject constructor(
     private val streamRepository: StreamRepository
 ) {

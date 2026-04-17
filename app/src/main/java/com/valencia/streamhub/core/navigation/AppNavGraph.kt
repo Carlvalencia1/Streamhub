@@ -18,6 +18,8 @@ import com.valencia.streamhub.features.streams.presentation.viewmodels.ChatViewM
 import com.valencia.streamhub.features.streams.presentation.viewmodels.StreamViewModel
 import com.valencia.streamhub.features.users.presentation.screens.LoginScreen
 import com.valencia.streamhub.features.users.presentation.screens.RegisterScreen
+import com.valencia.streamhub.features.users.presentation.screens.RoleSelectionScreen
+import com.valencia.streamhub.features.users.presentation.viewmodels.AuthViewModel
 
 @Composable
 fun AppNavGraph(
@@ -30,11 +32,19 @@ fun AppNavGraph(
         modifier = modifier
     ) {
         composable(route = Screen.Login.route) {
+            val authViewModel: AuthViewModel = hiltViewModel()
             LoginScreen(
                 navController = navController,
+                viewModel = authViewModel,
                 onLoginSuccess = {
-                    navController.navigate(Screen.Main.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                    if (authViewModel.authState.value.needsRoleSelection) {
+                        navController.navigate(Screen.RoleSelection.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate(Screen.Main.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
                     }
                 }
             )
@@ -44,6 +54,18 @@ fun AppNavGraph(
             RegisterScreen(
                 navController = navController,
                 onRegisterSuccess = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = Screen.RoleSelection.route) {
+            val authViewModel: AuthViewModel = hiltViewModel()
+            RoleSelectionScreen(
+                onRoleSelected = {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.RoleSelection.route) { inclusive = true }
+                    }
+                },
+                viewModel = authViewModel
             )
         }
 
@@ -90,6 +112,5 @@ fun AppNavGraph(
                 chatViewModel = chatViewModel
             )
         }
-
     }
 }

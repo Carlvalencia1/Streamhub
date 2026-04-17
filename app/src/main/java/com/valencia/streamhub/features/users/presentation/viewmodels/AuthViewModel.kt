@@ -2,10 +2,12 @@ package com.valencia.streamhub.features.users.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.valencia.streamhub.core.session.TokenManager
 import com.valencia.streamhub.features.users.domain.entities.AuthResult
 import com.valencia.streamhub.features.users.domain.usecases.GoogleLoginUseCase
 import com.valencia.streamhub.features.users.domain.usecases.LoginUseCase
 import com.valencia.streamhub.features.users.domain.usecases.RegisterUseCase
+import com.valencia.streamhub.features.users.domain.usecases.SetRoleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,14 +19,18 @@ data class AuthState(
     val token: String? = null,
     val error: String? = null,
     val isAuthenticated: Boolean = false,
-    val isRegistered: Boolean = false
+    val isRegistered: Boolean = false,
+    val needsRoleSelection: Boolean = false,
+    val roleSet: Boolean = false
 )
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val registerUseCase: RegisterUseCase,
-    private val googleLoginUseCase: GoogleLoginUseCase
+    private val googleLoginUseCase: GoogleLoginUseCase,
+    private val setRoleUseCase: SetRoleUseCase,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow(AuthState())
@@ -34,9 +40,14 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _authState.value = _authState.value.copy(isLoading = true, error = null)
             when (val result = loginUseCase(email, password)) {
-                is AuthResult.Success -> _authState.value = _authState.value.copy(
-                    isLoading = false, token = result.data, isAuthenticated = true
-                )
+                is AuthResult.Success -> {
+                    val role = tokenManager.getRole()
+                    _authState.value = _authState.value.copy(
+                        isLoading = false, token = result.data,
+                        isAuthenticated = true,
+                        needsRoleSelection = role.isBlank()
+                    )
+                }
                 is AuthResult.Error -> _authState.value = _authState.value.copy(
                     isLoading = false, error = result.message
                 )
@@ -64,14 +75,32 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _authState.value = _authState.value.copy(isLoading = true, error = null)
             when (val result = googleLoginUseCase(idToken)) {
-                is AuthResult.Success -> _authState.value = _authState.value.copy(
-                    isLoading = false, token = result.data, isAuthenticated = true
-                )
+                is AuthResult.Success -> {
+                    val role = tokenManager.getRole()
+                    _authState.value = _authState.value.copy(
+                        isLoading = false, token = result.data,
+                        isAuthenticated = true,
+                        needsRoleSelection = role.isBlank()
+                    )
+                }
                 is AuthResult.Error -> _authState.value = _authState.value.copy(
                     isLoading = false, error = result.message
                 )
                 else -> {}
             }
+        }
+    }
+
+    fun selectRole(role: String) {
+        viewModelScope.launch {
+            _authState.value = _authState.value.copy(isLoading = true)
+            setRoleUseCase(role)
+            _authState.value = _authState.value.copy(
+                isLoading = false,
+                needsRoleSelection = false,
+                isAuthenticated = true,
+                roleSet = true
+            )
         }
     }
 

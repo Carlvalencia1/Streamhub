@@ -7,6 +7,7 @@ interface StreamRepository {
     suspend fun getStreams(): StreamResult<List<Stream>>
     suspend fun createStream(title: String, description: String, thumbnail: String, category: String): StreamResult<Stream>
     suspend fun startStream(id: String): StreamResult<String>
+    suspend fun stopStream(id: String): StreamResult<String>
     suspend fun joinStream(id: String): StreamResult<String>
 }
 

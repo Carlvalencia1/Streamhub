@@ -8,6 +8,7 @@ import com.valencia.streamhub.features.users.data.datasources.remote.AuthApiServ
 import com.valencia.streamhub.features.users.data.datasources.remote.model.GoogleAuthRequest
 import com.valencia.streamhub.features.users.data.datasources.remote.model.LoginRequest
 import com.valencia.streamhub.features.users.data.datasources.remote.model.RegisterRequest
+import com.valencia.streamhub.features.users.data.datasources.remote.model.SetRoleRequest
 import com.valencia.streamhub.features.users.data.datasources.remote.model.UpdateProfileRequest
 import com.valencia.streamhub.features.users.domain.entities.AuthResult
 import com.valencia.streamhub.features.users.domain.repositories.AuthRepository
@@ -50,7 +51,6 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun loginWithGoogle(idToken: String): AuthResult {
         return try {
-            // Intentar con el backend primero
             val response = authApiService.googleAuth(GoogleAuthRequest(idToken))
             tokenManager.saveToken(response.token)
             response.email?.let { tokenManager.saveEmail(it) }
@@ -59,7 +59,6 @@ class AuthRepositoryImpl @Inject constructor(
             fetchAndSaveProfile()
             AuthResult.Success(response.token)
         } catch (e: Exception) {
-            // Fallback: extraer datos directamente del JWT de Google
             Log.w("AuthRepo", "Backend Google auth falló, usando fallback local: ${e.message}")
             loginWithGoogleFallback(idToken)
         }
@@ -73,7 +72,6 @@ class AuthRepositoryImpl @Inject constructor(
             val picture = claims["picture"] as? String
             val sub = claims["sub"] as? String ?: email
 
-            // Guardar sesión local con datos de Google
             tokenManager.saveToken("google_local_$sub")
             tokenManager.saveEmail(email)
             tokenManager.saveUsername(name)
@@ -102,7 +100,6 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateProfile(nickname: String?, bio: String?, location: String?): AuthResult {
-        // Guardar localmente siempre
         nickname?.let { tokenManager.saveNickname(it) }
         bio?.let { tokenManager.saveBio(it) }
         location?.let { tokenManager.saveLocation(it) }
@@ -112,6 +109,17 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.w("AuthRepo", "Perfil guardado solo localmente: ${e.message}")
             AuthResult.Success("Perfil actualizado")
+        }
+    }
+
+    override suspend fun setRole(role: String): AuthResult {
+        return try {
+            authApiService.setRole(SetRoleRequest(role))
+            tokenManager.saveRole(role)
+            AuthResult.Success(role)
+        } catch (e: Exception) {
+            tokenManager.saveRole(role)
+            AuthResult.Success(role)
         }
     }
 
@@ -127,6 +135,7 @@ class AuthRepositoryImpl @Inject constructor(
             me.avatarUrl?.let { tokenManager.saveAvatarUrl(it) }
             tokenManager.saveFollowersCount(me.followersCount)
             tokenManager.saveFollowingCount(me.followingCount)
+            me.role?.let { if (it.isNotBlank()) tokenManager.saveRole(it) }
         } catch (e: Exception) {
             Log.e("AuthRepo", "Error obteniendo perfil: ${e.message}")
         }

@@ -7,6 +7,7 @@ import com.valencia.streamhub.features.users.data.datasources.remote.model.Login
 import com.valencia.streamhub.features.users.data.datasources.remote.model.MeResponse
 import com.valencia.streamhub.features.users.data.datasources.remote.model.RegisterRequest
 import com.valencia.streamhub.features.users.data.datasources.remote.model.RegisterResponse
+import com.valencia.streamhub.features.users.data.datasources.remote.model.SetRoleRequest
 import com.valencia.streamhub.features.users.data.datasources.remote.model.UpdateProfileRequest
 import com.valencia.streamhub.features.users.data.datasources.remote.model.UserResponse
 import retrofit2.http.Body
@@ -29,4 +30,7 @@ interface AuthApiService {
 
     @PUT("api/protected/profile")
     suspend fun updateProfile(@Body request: UpdateProfileRequest): UserResponse
+
+    @PUT("api/protected/role")
+    suspend fun setRole(@Body request: SetRoleRequest): UserResponse
 }

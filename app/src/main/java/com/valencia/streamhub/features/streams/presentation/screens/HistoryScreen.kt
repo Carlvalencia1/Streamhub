@@ -92,6 +92,7 @@ fun HistoryScreen(
                             stream = stream,
                             currentUserId = null,
                             onStartClick = {},
+                            onStopClick = {},
                             onJoinClick = { id -> onNavigateToStream(id) }
                         )
                     }
