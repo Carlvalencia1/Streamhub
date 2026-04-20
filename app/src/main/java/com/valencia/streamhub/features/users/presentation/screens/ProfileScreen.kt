@@ -69,6 +69,8 @@ import com.valencia.streamhub.features.users.presentation.viewmodels.ProfileView
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
+    onNavigateToFollowers: () -> Unit = {},
+    onNavigateToFollowing: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val isDark by viewModel.isDarkTheme.collectAsStateWithLifecycle()
@@ -243,11 +245,11 @@ fun ProfileScreen(
                         .padding(vertical = 16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    StatItem(count = viewModel.followersCount, label = "Seguidores")
+                    StatItem(count = viewModel.followersCount, label = "Seguidores", onClick = onNavigateToFollowers)
                     StatDivider()
-                    StatItem(count = viewModel.followingCount, label = "Siguiendo")
+                    StatItem(count = viewModel.followingCount, label = "Siguiendo", onClick = onNavigateToFollowing)
                     StatDivider()
-                    StatItem(count = viewModel.streamCount, label = "Streams")
+                    StatItem(count = viewModel.streamCount, label = "Streams", onClick = {})
                 }
             }
 
@@ -456,8 +458,11 @@ private fun EditProfileSheet(
 }
 
 @Composable
-private fun StatItem(count: Int, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun StatItem(count: Int, label: String, onClick: () -> Unit = {}) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
         Text(
             text = formatCount(count),
             style = MaterialTheme.typography.titleLarge,

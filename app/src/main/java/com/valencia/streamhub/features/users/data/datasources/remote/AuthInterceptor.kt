@@ -9,7 +9,7 @@ class AuthInterceptor(private val tokenProvider: () -> String?) : Interceptor {
         val originalRequest = chain.request()
 
         val path = originalRequest.url.encodedPath
-        return if (token != null && (path.contains("/protected/") || path.contains("/api/streams") || path.contains("/api/notifications") || path.contains("/api/followers"))) {
+        return if (token != null && (path.contains("/protected/") || path.contains("/api/streams") || path.contains("/api/notifications") || path.contains("/api/followers") || path.contains("/api/communities") || path.contains("/api/channel") || path.contains("/api/upload"))) {
             val authenticatedRequest = originalRequest.newBuilder()
                 .addHeader("Authorization", "Bearer $token")
                 .build()

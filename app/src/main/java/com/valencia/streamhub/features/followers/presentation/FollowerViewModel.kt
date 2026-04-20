@@ -3,6 +3,7 @@ package com.valencia.streamhub.features.followers.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.valencia.streamhub.features.followers.domain.FollowerRepository
+import com.valencia.streamhub.features.followers.domain.UserSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +14,10 @@ data class FollowerState(
     val isFollowing: Boolean = false,
     val followerCount: Int = 0,
     val followingIds: List<String> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val followersList: List<UserSummary> = emptyList(),
+    val followingList: List<UserSummary> = emptyList(),
+    val isListLoading: Boolean = false
 )
 
 @HiltViewModel
@@ -41,6 +45,22 @@ class FollowerViewModel @Inject constructor(
                 followerCount = count,
                 isLoading = false
             )
+        }
+    }
+
+    fun loadFollowersList() {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isListLoading = true)
+            val list = repository.getMyFollowers()
+            _state.value = _state.value.copy(followersList = list, isListLoading = false)
+        }
+    }
+
+    fun loadFollowingList() {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isListLoading = true)
+            val list = repository.getMyFollowing()
+            _state.value = _state.value.copy(followingList = list, isListLoading = false)
         }
     }
 

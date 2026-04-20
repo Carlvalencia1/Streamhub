@@ -9,4 +9,15 @@ sealed class Screen(val route: String) {
     object StreamDetail : Screen("stream/{streamId}") {
         fun createRoute(streamId: String) = "stream/$streamId"
     }
+    object FollowersList : Screen("followers_list")
+    object FollowingList : Screen("following_list")
+    object Communities : Screen("communities")
+    object CommunityDetail : Screen("community/{communityId}") {
+        fun createRoute(communityId: String) = "community/$communityId"
+    }
+    object ChannelPanel : Screen("channel_panel")
+    object ChannelChat : Screen("channel_chat/{communityId}/{channelId}/{channelName}/{isAdmin}") {
+        fun createRoute(communityId: String, channelId: String, channelName: String, isAdmin: Boolean) =
+            "channel_chat/$communityId/$channelId/${channelName.replace("/", "-")}/$isAdmin"
+    }
 }

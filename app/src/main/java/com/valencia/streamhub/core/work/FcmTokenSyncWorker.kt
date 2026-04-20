@@ -56,7 +56,7 @@ class FcmTokenSyncWorker(
 
             val body = json.toRequestBody("application/json".toMediaType())
             val request = Request.Builder()
-                .url("http://3.232.197.126:8081/api/notifications/fcm-token")
+                .url("http://10.236.32.23:8080/api/notifications/fcm-token")
                 .addHeader("Authorization", "Bearer $authToken")
                 .post(body)
                 .build()

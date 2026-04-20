@@ -37,10 +37,13 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun register(username: String, email: String, password: String): AuthResult {
         return try {
-            val response = authApiService.register(RegisterRequest(username, email, password))
+            authApiService.register(RegisterRequest(username, email, password))
             tokenManager.saveUsername(username)
             tokenManager.saveEmail(email)
-            AuthResult.Success(response.id ?: response.email ?: "Registro exitoso")
+            // Auto-login to obtain token so RoleSelection can call setRole against the API
+            val loginResponse = authApiService.login(LoginRequest(email, password))
+            tokenManager.saveToken(loginResponse.token)
+            AuthResult.Success(loginResponse.token)
         } catch (e: HttpException) {
             val body = e.response()?.errorBody()?.string() ?: "Error HTTP ${e.code()}"
             AuthResult.Error("Error ${e.code()}: $body")
@@ -99,12 +102,13 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateProfile(nickname: String?, bio: String?, location: String?): AuthResult {
+    override suspend fun updateProfile(nickname: String?, bio: String?, location: String?, bannerUrl: String?): AuthResult {
         nickname?.let { tokenManager.saveNickname(it) }
         bio?.let { tokenManager.saveBio(it) }
         location?.let { tokenManager.saveLocation(it) }
+        bannerUrl?.let { tokenManager.saveBannerUrl(it) }
         return try {
-            authApiService.updateProfile(UpdateProfileRequest(nickname, bio, location))
+            authApiService.updateProfile(UpdateProfileRequest(nickname, bio, location, bannerUrl))
             AuthResult.Success("Perfil actualizado")
         } catch (e: Exception) {
             Log.w("AuthRepo", "Perfil guardado solo localmente: ${e.message}")
@@ -116,9 +120,11 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             authApiService.setRole(SetRoleRequest(role))
             tokenManager.saveRole(role)
+            tokenManager.saveRoleConfirmed(true)
             AuthResult.Success(role)
         } catch (e: Exception) {
             tokenManager.saveRole(role)
+            tokenManager.saveRoleConfirmed(true)
             AuthResult.Success(role)
         }
     }
@@ -133,6 +139,7 @@ class AuthRepositoryImpl @Inject constructor(
             me.bio?.let { tokenManager.saveBio(it) }
             me.location?.let { tokenManager.saveLocation(it) }
             me.avatarUrl?.let { tokenManager.saveAvatarUrl(it) }
+            me.bannerUrl?.let { tokenManager.saveBannerUrl(it) }
             tokenManager.saveFollowersCount(me.followersCount)
             tokenManager.saveFollowingCount(me.followingCount)
             me.role?.let { if (it.isNotBlank()) tokenManager.saveRole(it) }

@@ -15,6 +15,17 @@ data class FollowingResponse(
     @SerializedName("streamer_ids") val streamerIds: List<String>
 )
 
+data class UserSummaryResponse(
+    @SerializedName("id") val id: String,
+    @SerializedName("username") val username: String,
+    @SerializedName("nickname") val nickname: String?,
+    @SerializedName("avatar_url") val avatarUrl: String?
+)
+
+data class UserListResponse(
+    @SerializedName("users") val users: List<UserSummaryResponse>
+)
+
 interface FollowerApiService {
     @POST("api/followers/{streamerId}/follow")
     suspend fun follow(@Path("streamerId") streamerId: String)
@@ -27,4 +38,10 @@ interface FollowerApiService {
 
     @GET("api/followers/following")
     suspend fun getFollowing(): FollowingResponse
+
+    @GET("api/followers/my-followers")
+    suspend fun getMyFollowers(): UserListResponse
+
+    @GET("api/followers/my-following")
+    suspend fun getMyFollowing(): UserListResponse
 }

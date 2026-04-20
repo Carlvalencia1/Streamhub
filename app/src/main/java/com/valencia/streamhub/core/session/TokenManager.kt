@@ -52,6 +52,21 @@ class TokenManager @Inject constructor(
     fun saveStreamCount(count: Int) = prefs.edit().putInt(KEY_STREAM_COUNT, count).apply()
     fun getStreamCount(): Int = prefs.getInt(KEY_STREAM_COUNT, 0)
 
+    fun saveBannerUrl(url: String) = prefs.edit().putString(KEY_BANNER_URL, url).apply()
+    fun getBannerUrl(): String? = prefs.getString(KEY_BANNER_URL, null)
+
+    fun saveTwitter(v: String) = prefs.edit().putString(KEY_TWITTER, v).apply()
+    fun getTwitter(): String? = prefs.getString(KEY_TWITTER, null)
+    fun saveInstagram(v: String) = prefs.edit().putString(KEY_INSTAGRAM, v).apply()
+    fun getInstagram(): String? = prefs.getString(KEY_INSTAGRAM, null)
+    fun saveYoutube(v: String) = prefs.edit().putString(KEY_YOUTUBE, v).apply()
+    fun getYoutube(): String? = prefs.getString(KEY_YOUTUBE, null)
+    fun saveTiktok(v: String) = prefs.edit().putString(KEY_TIKTOK, v).apply()
+    fun getTiktok(): String? = prefs.getString(KEY_TIKTOK, null)
+
+    fun saveRoleConfirmed(confirmed: Boolean) = prefs.edit().putBoolean(KEY_ROLE_CONFIRMED, confirmed).apply()
+    fun isRoleConfirmed(): Boolean = prefs.getBoolean(KEY_ROLE_CONFIRMED, false)
+
     fun clearToken() = prefs.edit().remove(KEY_TOKEN).remove(KEY_USER_ID).apply()
 
     fun clearAll() = prefs.edit().clear().apply()
@@ -70,5 +85,11 @@ class TokenManager @Inject constructor(
         private const val KEY_FOLLOWING = "following_count"
         private const val KEY_ROLE = "user_role"
         private const val KEY_STREAM_COUNT = "stream_count"
+        private const val KEY_BANNER_URL = "banner_url"
+        private const val KEY_TWITTER = "social_twitter"
+        private const val KEY_INSTAGRAM = "social_instagram"
+        private const val KEY_YOUTUBE = "social_youtube"
+        private const val KEY_TIKTOK = "social_tiktok"
+        private const val KEY_ROLE_CONFIRMED = "role_confirmed"
     }
 }

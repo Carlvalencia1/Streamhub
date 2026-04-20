@@ -41,11 +41,10 @@ class AuthViewModel @Inject constructor(
             _authState.value = _authState.value.copy(isLoading = true, error = null)
             when (val result = loginUseCase(email, password)) {
                 is AuthResult.Success -> {
-                    val role = tokenManager.getRole()
                     _authState.value = _authState.value.copy(
                         isLoading = false, token = result.data,
                         isAuthenticated = true,
-                        needsRoleSelection = role.isBlank()
+                        needsRoleSelection = !tokenManager.isRoleConfirmed()
                     )
                 }
                 is AuthResult.Error -> _authState.value = _authState.value.copy(
@@ -76,11 +75,10 @@ class AuthViewModel @Inject constructor(
             _authState.value = _authState.value.copy(isLoading = true, error = null)
             when (val result = googleLoginUseCase(idToken)) {
                 is AuthResult.Success -> {
-                    val role = tokenManager.getRole()
                     _authState.value = _authState.value.copy(
                         isLoading = false, token = result.data,
                         isAuthenticated = true,
-                        needsRoleSelection = role.isBlank()
+                        needsRoleSelection = !tokenManager.isRoleConfirmed()
                     )
                 }
                 is AuthResult.Error -> _authState.value = _authState.value.copy(

@@ -6,6 +6,6 @@ interface AuthRepository {
     suspend fun login(email: String, password: String): AuthResult
     suspend fun register(username: String, email: String, password: String): AuthResult
     suspend fun loginWithGoogle(idToken: String): AuthResult
-    suspend fun updateProfile(nickname: String?, bio: String?, location: String?): AuthResult
+    suspend fun updateProfile(nickname: String?, bio: String?, location: String?, bannerUrl: String? = null): AuthResult
     suspend fun setRole(role: String): AuthResult
 }

@@ -37,4 +37,22 @@ class FollowerRepositoryImpl @Inject constructor(
         Log.w("FollowerRepo", "getFollowerCount failed: ${e.message}")
         0
     }
+
+    override suspend fun getMyFollowers(): List<com.valencia.streamhub.features.followers.domain.UserSummary> = try {
+        api.getMyFollowers().users.map {
+            com.valencia.streamhub.features.followers.domain.UserSummary(it.id, it.username, it.nickname, it.avatarUrl)
+        }
+    } catch (e: Exception) {
+        Log.w("FollowerRepo", "getMyFollowers failed: ${e.message}")
+        emptyList()
+    }
+
+    override suspend fun getMyFollowing(): List<com.valencia.streamhub.features.followers.domain.UserSummary> = try {
+        api.getMyFollowing().users.map {
+            com.valencia.streamhub.features.followers.domain.UserSummary(it.id, it.username, it.nickname, it.avatarUrl)
+        }
+    } catch (e: Exception) {
+        Log.w("FollowerRepo", "getMyFollowing failed: ${e.message}")
+        emptyList()
+    }
 }
