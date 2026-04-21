@@ -10,6 +10,7 @@ import com.valencia.streamhub.features.users.data.datasources.remote.model.Regis
 import com.valencia.streamhub.features.users.data.datasources.remote.model.SetRoleRequest
 import com.valencia.streamhub.features.users.data.datasources.remote.model.UpdateProfileRequest
 import com.valencia.streamhub.features.users.data.datasources.remote.model.UserResponse
+import com.valencia.streamhub.features.users.data.datasources.remote.model.UserSearchDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -33,4 +34,7 @@ interface AuthApiService {
 
     @PUT("api/protected/role")
     suspend fun setRole(@Body request: SetRoleRequest): UserResponse
+
+    @GET("api/users")
+    suspend fun getUsers(): List<UserSearchDto>
 }

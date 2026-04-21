@@ -11,6 +11,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -56,7 +57,7 @@ class FcmTokenSyncWorker(
 
             val body = json.toRequestBody("application/json".toMediaType())
             val request = Request.Builder()
-                .url("http://10.236.32.23:8080/api/notifications/fcm-token")
+                .url("http://10.88.128.227:8080/api/notifications/fcm-token")
                 .addHeader("Authorization", "Bearer $authToken")
                 .post(body)
                 .build()
@@ -84,6 +85,15 @@ class FcmTokenSyncWorker(
         private const val KEY_TOKEN = "key_fcm_token"
         private const val PREFS_NAME = "fcm_sync_prefs"
         private const val KEY_LAST_SYNCED_TOKEN = "last_synced_fcm_token"
+
+        fun forceSync(context: Context) {
+            // Clear cached token so the worker sends it even if "already synced"
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit().remove(KEY_LAST_SYNCED_TOKEN).apply()
+            FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                if (token.isNotBlank()) enqueue(context, token)
+            }
+        }
 
         fun enqueue(context: Context, token: String) {
             val constraints = Constraints.Builder()

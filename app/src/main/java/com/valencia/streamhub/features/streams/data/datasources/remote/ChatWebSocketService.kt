@@ -36,7 +36,7 @@ class ChatWebSocketService @Inject constructor(
     fun connect(streamId: String, token: String) {
         disconnect()
 
-        val url = "ws://3.232.197.126:8081/ws/chat/$streamId?token=$token"
+        val url = "ws://10.78.168.227:8080/ws/chat/$streamId?token=$token"
         Log.d("ChatWS", "Conectando a: $url")
 
         val request = Request.Builder()

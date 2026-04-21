@@ -66,8 +66,11 @@ data class MessageDto(
     @SerializedName("content") val content: String?,
     @SerializedName("media_url") val mediaUrl: String?,
     @SerializedName("poll") val poll: com.valencia.streamhub.features.channelposts.data.PollDto?,
-    @SerializedName("created_at") val createdAt: String
+    @SerializedName("created_at") val createdAt: String,
+    @SerializedName("my_reaction") val myReaction: String? = null
 )
+
+data class ReactRequest(@SerializedName("emoji") val emoji: String)
 
 data class MessageListResponse(@SerializedName("messages") val messages: List<MessageDto>)
 
@@ -162,4 +165,12 @@ interface CommunityApiService {
         @Path("pollId") pollId: String,
         @Body req: com.valencia.streamhub.features.channelposts.data.VoteRequest
     ): com.valencia.streamhub.features.channelposts.data.PollDto
+
+    @POST("api/communities/{id}/channels/{channelId}/messages/{messageId}/react")
+    suspend fun reactToMessage(
+        @Path("id") communityId: String,
+        @Path("channelId") channelId: String,
+        @Path("messageId") messageId: String,
+        @Body req: ReactRequest
+    )
 }

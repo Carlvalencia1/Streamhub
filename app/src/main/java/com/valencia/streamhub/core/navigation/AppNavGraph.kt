@@ -1,18 +1,21 @@
 package com.valencia.streamhub.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.valencia.streamhub.core.work.FcmTokenSyncWorker
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.valencia.streamhub.core.navigation.routes.Screen
+import kotlinx.coroutines.delay
 import com.valencia.streamhub.features.communities.presentation.screens.CommunityDetailScreen
 import com.valencia.streamhub.features.communities.presentation.screens.CommunitiesScreen
 import com.valencia.streamhub.features.followers.presentation.screens.FollowersListScreen
@@ -21,6 +24,8 @@ import com.valencia.streamhub.features.streams.presentation.screens.CreateStream
 import com.valencia.streamhub.features.streams.presentation.screens.StreamScreen
 import com.valencia.streamhub.features.streams.presentation.viewmodels.ChatViewModel
 import com.valencia.streamhub.features.streams.presentation.viewmodels.StreamViewModel
+import android.net.Uri
+import com.valencia.streamhub.features.broadcasting.presentation.screens.BroadcastingScreen
 import com.valencia.streamhub.features.communities.presentation.screens.ChannelChatScreen
 import com.valencia.streamhub.features.users.presentation.screens.ChannelPanelScreen
 import com.valencia.streamhub.features.users.presentation.screens.LoginScreen
@@ -38,10 +43,18 @@ fun AppNavGraph(
         val prefs = context.getSharedPreferences("streamhub_prefs", android.content.Context.MODE_PRIVATE)
         val token = prefs.getString("auth_token", null)
         val roleConfirmed = prefs.getBoolean("role_confirmed", false)
+        val isRealToken = !token.isNullOrBlank() && !token.startsWith("google_local_")
         when {
-            token.isNullOrBlank() -> Screen.Login.route
+            !isRealToken -> Screen.Login.route
             !roleConfirmed -> Screen.RoleSelection.route
             else -> Screen.Main.route
+        }
+    }
+
+    // Si el usuario ya tiene sesión activa al abrir la app, sincroniza el token FCM
+    LaunchedEffect(Unit) {
+        if (startDestination == Screen.Main.route) {
+            FcmTokenSyncWorker.forceSync(context)
         }
     }
 
@@ -110,8 +123,28 @@ fun AppNavGraph(
             val streamViewModel: StreamViewModel = hiltViewModel(mainEntry)
             CreateStreamScreen(
                 onBack = { navController.popBackStack() },
-                onCreated = { navController.popBackStack() },
+                onCreated = { streamId, rtmpUrl ->
+                    navController.navigate(Screen.Broadcasting.createRoute(streamId, rtmpUrl)) {
+                        popUpTo(Screen.CreateStream.route) { inclusive = true }
+                    }
+                },
                 viewModel = streamViewModel
+            )
+        }
+
+        composable(
+            route = Screen.Broadcasting.route,
+            arguments = listOf(
+                navArgument("streamId") { type = NavType.StringType },
+                navArgument("rtmpUrl") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val streamId = backStackEntry.arguments?.getString("streamId") ?: ""
+            val rtmpUrl = Uri.decode(backStackEntry.arguments?.getString("rtmpUrl") ?: "")
+            BroadcastingScreen(
+                streamId = streamId,
+                rtmpUrl = rtmpUrl,
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -128,6 +161,13 @@ fun AppNavGraph(
 
             val streamState by streamViewModel.streamState.collectAsStateWithLifecycle()
             val stream = streamState.streams.find { it.id == streamId }
+
+            LaunchedEffect(streamId) {
+                while (true) {
+                    delay(5_000L)
+                    streamViewModel.refreshStream(streamId)
+                }
+            }
 
             StreamScreen(
                 stream = stream,

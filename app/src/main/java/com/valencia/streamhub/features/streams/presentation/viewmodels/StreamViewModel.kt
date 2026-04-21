@@ -8,6 +8,7 @@ import com.valencia.streamhub.core.session.TokenManager
 import com.valencia.streamhub.features.streams.domain.entities.Stream
 import com.valencia.streamhub.features.streams.domain.entities.StreamResult
 import com.valencia.streamhub.features.streams.domain.usecases.CreateStreamUseCase
+import com.valencia.streamhub.features.streams.domain.usecases.GetStreamByIdUseCase
 import com.valencia.streamhub.features.streams.domain.usecases.GetStreamsUseCase
 import com.valencia.streamhub.features.streams.domain.usecases.JoinStreamUseCase
 import com.valencia.streamhub.features.streams.domain.usecases.StartStreamUseCase
@@ -30,12 +31,15 @@ data class StreamState(
     val isCreated: Boolean = false,
     val isStarted: Boolean = false,
     val isStopped: Boolean = false,
-    val isJoined: Boolean = false
+    val isJoined: Boolean = false,
+    val createdStreamId: String = "",
+    val createdRtmpUrl: String = ""
 )
 
 @HiltViewModel
 class StreamViewModel @Inject constructor(
     private val getStreamsUseCase: GetStreamsUseCase,
+    private val getStreamByIdUseCase: GetStreamByIdUseCase,
     private val createStreamUseCase: CreateStreamUseCase,
     private val startStreamUseCase: StartStreamUseCase,
     private val stopStreamUseCase: StopStreamUseCase,
@@ -116,7 +120,12 @@ class StreamViewModel @Inject constructor(
             _streamState.value = _streamState.value.copy(isLoading = true, error = null, isCreated = false)
             when (val result = createStreamUseCase(title, description, thumbnail, category)) {
                 is StreamResult.Success -> {
-                    _streamState.value = _streamState.value.copy(isLoading = false, isCreated = true)
+                    _streamState.value = _streamState.value.copy(
+                        isLoading = false,
+                        isCreated = true,
+                        createdStreamId = result.data.id,
+                        createdRtmpUrl = result.data.rtmpUrl ?: ""
+                    )
                     loadStreams()
                 }
                 is StreamResult.Error -> {
@@ -175,8 +184,22 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    fun refreshStream(id: String) {
+        viewModelScope.launch {
+            when (val result = getStreamByIdUseCase(id)) {
+                is StreamResult.Success -> {
+                    val updated = result.data
+                    _streamState.value = _streamState.value.copy(
+                        streams = _streamState.value.streams.map { if (it.id == id) updated else it }
+                    )
+                }
+                else -> {}
+            }
+        }
+    }
+
     fun clearError() { _streamState.value = _streamState.value.copy(error = null) }
-    fun resetCreated() { _streamState.value = _streamState.value.copy(isCreated = false) }
+    fun resetCreated() { _streamState.value = _streamState.value.copy(isCreated = false, createdStreamId = "", createdRtmpUrl = "") }
 
     companion object {
         val CATEGORIES = listOf(

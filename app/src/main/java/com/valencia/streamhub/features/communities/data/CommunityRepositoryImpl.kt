@@ -85,6 +85,12 @@ class CommunityRepositoryImpl @Inject constructor(
         try { api.setDisappearing(communityId, channelId, com.valencia.streamhub.features.communities.data.remote.SetDisappearingRequest(ttlSeconds)) } catch (_: Exception) {}
     }
 
+    override suspend fun reactToMessage(communityId: String, channelId: String, messageId: String, emoji: String) {
+        try {
+            api.reactToMessage(communityId, channelId, messageId, com.valencia.streamhub.features.communities.data.remote.ReactRequest(emoji))
+        } catch (_: Exception) {}
+    }
+
     override suspend fun votePoll(pollId: String, optionIndex: Int): com.valencia.streamhub.features.channelposts.domain.Poll? = try {
         api.votePoll(pollId, com.valencia.streamhub.features.channelposts.data.VoteRequest(optionIndex)).let {
             com.valencia.streamhub.features.channelposts.domain.Poll(
@@ -106,7 +112,8 @@ class CommunityRepositoryImpl @Inject constructor(
                     votes = it.votes?.map { v -> com.valencia.streamhub.features.channelposts.domain.PollVote(v.userId, v.optionIndex) } ?: emptyList()
                 )
             },
-            createdAt = createdAt
+            createdAt = createdAt,
+            myReaction = myReaction
         )
 
     private fun CommunityDto.toDomain() = Community(id, ownerId, name, description, imageUrl, inviteCode)

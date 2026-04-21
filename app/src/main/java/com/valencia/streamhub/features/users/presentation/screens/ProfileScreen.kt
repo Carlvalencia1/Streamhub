@@ -55,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -75,7 +76,11 @@ fun ProfileScreen(
 ) {
     val isDark by viewModel.isDarkTheme.collectAsStateWithLifecycle()
     val profileState by viewModel.profileState.collectAsStateWithLifecycle()
+    val followersCount by viewModel.followersCount.collectAsStateWithLifecycle()
+    val followingCount by viewModel.followingCount.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) { viewModel.refreshCounts() }
 
     var showEditSheet by remember { mutableStateOf(false) }
     var currentAvatarUri by remember { mutableStateOf(viewModel.effectiveAvatarUri) }
@@ -106,16 +111,14 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mi Perfil") },
+                title = { Text("Mi Perfil", fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { showEditSheet = true }) {
                         Icon(Icons.Default.Edit, contentDescription = "Editar perfil")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         }
@@ -130,7 +133,14 @@ fun ProfileScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primaryContainer,
+                                MaterialTheme.colorScheme.background
+                            )
+                        )
+                    )
                     .padding(bottom = 32.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -236,8 +246,9 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .padding(top = 8.dp),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(18.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
             ) {
                 Row(
                     modifier = Modifier
@@ -245,11 +256,13 @@ fun ProfileScreen(
                         .padding(vertical = 16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    StatItem(count = viewModel.followersCount, label = "Seguidores", onClick = onNavigateToFollowers)
+                    StatItem(count = followersCount, label = "Seguidores", onClick = onNavigateToFollowers)
                     StatDivider()
-                    StatItem(count = viewModel.followingCount, label = "Siguiendo", onClick = onNavigateToFollowing)
-                    StatDivider()
-                    StatItem(count = viewModel.streamCount, label = "Streams", onClick = {})
+                    StatItem(count = followingCount, label = "Siguiendo", onClick = onNavigateToFollowing)
+                    if (viewModel.role == "streamer") {
+                        StatDivider()
+                        StatItem(count = viewModel.streamCount, label = "Streams", onClick = {})
+                    }
                 }
             }
 
@@ -259,8 +272,9 @@ fun ProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(18.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -310,8 +324,9 @@ fun ProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(18.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
             ) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -347,7 +362,11 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                )
             ) {
                 Icon(Icons.Default.ExitToApp, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))

@@ -10,6 +10,10 @@ data class Stream(
     val viewersCount: Int,
     val isLive: Boolean,
     val startedAt: String?,
-    val createdAt: String
+    val createdAt: String,
+    val rtmpUrl: String? = null,
+    val streamKey: String? = null,
+    val playbackUrl: String? = null,
+    val recordingUrl: String? = null
 )
 

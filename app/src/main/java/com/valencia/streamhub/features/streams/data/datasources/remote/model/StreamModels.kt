@@ -12,7 +12,18 @@ data class StreamResponse(
     @SerializedName(value = "ViewersCount", alternate = ["viewers_count"]) val viewers_count: Int = 0,
     @SerializedName(value = "IsLive", alternate = ["is_live"]) val is_live: Boolean = false,
     @SerializedName(value = "StartedAt", alternate = ["started_at"]) val started_at: String? = null,
-    @SerializedName(value = "CreatedAt", alternate = ["created_at"]) val created_at: String? = null
+    @SerializedName(value = "CreatedAt", alternate = ["created_at"]) val created_at: String? = null,
+    @SerializedName(value = "StreamKey", alternate = ["stream_key"]) val stream_key: String? = null,
+    @SerializedName(value = "PlaybackURL", alternate = ["playback_url"]) val playback_url: String? = null,
+    @SerializedName(value = "RecordingURL", alternate = ["recording_url"]) val recording_url: String? = null
+)
+
+data class CreateStreamResponse(
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("title") val title: String? = null,
+    @SerializedName("stream_key") val streamKey: String? = null,
+    @SerializedName("rtmp_url") val rtmpUrl: String? = null,
+    @SerializedName("playback_url") val playbackUrl: String? = null
 )
 
 data class CreateStreamRequest(

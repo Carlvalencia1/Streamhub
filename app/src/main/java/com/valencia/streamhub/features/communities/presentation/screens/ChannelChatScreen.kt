@@ -68,7 +68,6 @@ fun ChannelChatScreen(
     var captureFile: File? by remember { mutableStateOf<File?>(null) }
     var captureUri: Uri? by remember { mutableStateOf<Uri?>(null) }
     var reactionTarget by remember { mutableStateOf<String?>(null) }
-    var reactions by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     val community = detailState.detail?.community
     val memberCount = detailState.detail?.memberCount ?: 0
@@ -238,7 +237,7 @@ fun ChannelChatScreen(
                         MessageBubble(
                             message = msg,
                             isAdmin = isAdmin,
-                            reaction = reactions[msg.id],
+                            reaction = chatState.reactions[msg.id],
                             onTap = {
                                 if (!isAdmin) {
                                     reactionTarget = if (reactionTarget == msg.id) null else msg.id
@@ -249,7 +248,7 @@ fun ChannelChatScreen(
                         )
                         if (!isAdmin && reactionTarget == msg.id) {
                             EmojiPickerRow { emoji ->
-                                reactions = reactions + (msg.id to emoji)
+                                viewModel.reactToMessage(msg.id, emoji)
                                 reactionTarget = null
                             }
                         }

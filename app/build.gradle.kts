@@ -52,14 +52,14 @@ android {
             dimension = "environment"
             buildConfigField("String", "BASE_URL_RICK", "\"https://rickandmortyapi.com/api/\"")
             buildConfigField("String", "BASE_URL_JSON", "\"https://jsonplaceholder.typicode.com/\"")
-            resValue("string", "app_name", "Demo (DEV)")
+            resValue("string", "app_name", "StreamHub")
         }
 
         create("prod") {
             dimension = "environment"
             buildConfigField("String", "BASE_URL_RICK", "\"https://rickandmortyapi.com/api/\"")
             buildConfigField("String", "BASE_URL_JSON", "\"https://jsonplaceholder.typicode.com/\"")
-            resValue("string", "app_name", "Demo")
+            resValue("string", "app_name", "StreamHub")
         }
     }
 }
@@ -106,6 +106,11 @@ dependencies {
     implementation(libs.firebase.messaging)                        // FCM
     implementation(libs.work.runtime.ktx)                          // WorkManager
     implementation(libs.stream.webrtc)                             // WebRTC
+    implementation(libs.media3.exoplayer)                          // ExoPlayer
+    implementation(libs.media3.exoplayer.hls)                      // ExoPlayer HLS
+    implementation(libs.media3.ui)                                 // ExoPlayer UI
+    implementation(libs.streampack.core)                           // StreamPack base
+    implementation(libs.streampack.rtmp)                           // RTMP streaming
     implementation(libs.credentials)                               // Credential Manager
     implementation(libs.credentials.play.services.auth)            // Google Play Services Auth
     implementation(libs.google.identity.googleid)                  // Google ID

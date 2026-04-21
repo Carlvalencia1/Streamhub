@@ -13,7 +13,9 @@ fun StreamEntity.toDomain() = Stream(
     viewersCount = viewersCount,
     isLive = isLive,
     startedAt = startedAt,
-    createdAt = createdAt
+    createdAt = createdAt,
+    streamKey = streamKey.takeIf { it.isNotBlank() },
+    playbackUrl = playbackUrl.takeIf { it.isNotBlank() }
 )
 
 fun Stream.toEntity() = StreamEntity(
@@ -25,8 +27,8 @@ fun Stream.toEntity() = StreamEntity(
     category = category,
     isLive = isLive,
     viewersCount = viewersCount,
-    streamKey = "",
-    playbackUrl = "",
+    streamKey = streamKey ?: "",
+    playbackUrl = playbackUrl ?: "",
     startedAt = startedAt,
     createdAt = createdAt
 )

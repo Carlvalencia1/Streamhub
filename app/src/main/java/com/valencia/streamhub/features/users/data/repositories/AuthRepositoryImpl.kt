@@ -1,8 +1,6 @@
 package com.valencia.streamhub.features.users.data.repositories
 
-import android.util.Base64
 import android.util.Log
-import com.google.gson.Gson
 import com.valencia.streamhub.core.session.TokenManager
 import com.valencia.streamhub.features.users.data.datasources.remote.AuthApiService
 import com.valencia.streamhub.features.users.data.datasources.remote.model.GoogleAuthRequest
@@ -68,38 +66,8 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     private fun loginWithGoogleFallback(idToken: String): AuthResult {
-        return try {
-            val claims = decodeJwtPayload(idToken)
-            val email = claims["email"] as? String ?: return AuthResult.Error("No se pudo obtener el email de Google")
-            val name = claims["name"] as? String ?: email.substringBefore("@")
-            val picture = claims["picture"] as? String
-            val sub = claims["sub"] as? String ?: email
-
-            tokenManager.saveToken("google_local_$sub")
-            tokenManager.saveEmail(email)
-            tokenManager.saveUsername(name)
-            tokenManager.saveNickname(name)
-            picture?.let { tokenManager.saveAvatarUrl(it) }
-            tokenManager.saveUserId(sub)
-
-            Log.d("AuthRepo", "Login Google local exitoso: $email")
-            AuthResult.Success("google_local_$sub")
-        } catch (e: Exception) {
-            AuthResult.Error("Error al iniciar con Google: ${e.message}")
-        }
-    }
-
-    private fun decodeJwtPayload(token: String): Map<String, Any> {
-        return try {
-            val payload = token.split(".").getOrNull(1) ?: return emptyMap()
-            val padded = payload + "=".repeat((4 - payload.length % 4) % 4)
-            val decoded = String(Base64.decode(padded, Base64.URL_SAFE or Base64.NO_WRAP))
-            @Suppress("UNCHECKED_CAST")
-            Gson().fromJson(decoded, Map::class.java) as Map<String, Any>
-        } catch (e: Exception) {
-            Log.e("AuthRepo", "Error decodificando JWT: ${e.message}")
-            emptyMap()
-        }
+        Log.e("AuthRepo", "Google auth falló y no hay conexión con el servidor")
+        return AuthResult.Error("No se pudo conectar con el servidor. Verifica tu conexión e intenta de nuevo.")
     }
 
     override suspend fun updateProfile(nickname: String?, bio: String?, location: String?, bannerUrl: String?): AuthResult {
@@ -142,7 +110,12 @@ class AuthRepositoryImpl @Inject constructor(
             me.bannerUrl?.let { tokenManager.saveBannerUrl(it) }
             tokenManager.saveFollowersCount(me.followersCount)
             tokenManager.saveFollowingCount(me.followingCount)
-            me.role?.let { if (it.isNotBlank()) tokenManager.saveRole(it) }
+            me.role?.let {
+                if (it.isNotBlank()) {
+                    tokenManager.saveRole(it)
+                    tokenManager.saveRoleConfirmed(true)
+                }
+            }
         } catch (e: Exception) {
             Log.e("AuthRepo", "Error obteniendo perfil: ${e.message}")
         }

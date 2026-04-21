@@ -1,10 +1,13 @@
 package com.valencia.streamhub.features.followers.presentation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.valencia.streamhub.core.work.FcmTokenSyncWorker
 import com.valencia.streamhub.features.followers.domain.FollowerRepository
 import com.valencia.streamhub.features.followers.domain.UserSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -22,7 +25,8 @@ data class FollowerState(
 
 @HiltViewModel
 class FollowerViewModel @Inject constructor(
-    private val repository: FollowerRepository
+    private val repository: FollowerRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FollowerState())
@@ -74,7 +78,11 @@ class FollowerViewModel @Inject constructor(
             )
             try {
                 if (wasFollowing) repository.unfollow(streamerId)
-                else repository.follow(streamerId)
+                else {
+                    repository.follow(streamerId)
+                    // Ensure this device's FCM token is registered so the streamer can notify us
+                    FcmTokenSyncWorker.forceSync(context)
+                }
 
                 val updatedIds = repository.getFollowingIds()
                 _state.value = _state.value.copy(followingIds = updatedIds)

@@ -13,22 +13,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.valencia.streamhub.R
-import com.valencia.streamhub.features.broadcasting.domain.repositories.BroadcastingRepository
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class StreamBroadcastForegroundService : Service() {
-
-    @Inject
-    lateinit var broadcastingRepository: BroadcastingRepository
-
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -45,10 +33,7 @@ class StreamBroadcastForegroundService : Service() {
                 updateNotification(title, message)
             }
             ACTION_STOP -> {
-                serviceScope.launch {
-                    runCatching { broadcastingRepository.stopBroadcasting() }
-                    stopSelf()
-                }
+                stopSelf()
             }
         }
         return START_STICKY
@@ -56,7 +41,6 @@ class StreamBroadcastForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        serviceScope.cancel()
         notificationManager.cancel(NOTIFICATION_ID)
     }
 

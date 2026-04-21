@@ -7,14 +7,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Subscriptions
-import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +27,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.valencia.streamhub.core.navigation.routes.Screen
@@ -55,64 +59,84 @@ fun MainScreen(
     }
     val isStreamer = role == "streamer"
 
+    val navItemColors = NavigationBarItemDefaults.colors(
+        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        selectedTextColor = MaterialTheme.colorScheme.primary,
+        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                tonalElevation = 3.dp
+            ) {
                 NavigationBarItem(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                    label = { Text("Inicio") }
+                    label = { Text("Inicio", fontWeight = if (selectedTab == 0) FontWeight.SemiBold else FontWeight.Normal) },
+                    colors = navItemColors
                 )
                 if (isStreamer) {
                     NavigationBarItem(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
                         icon = { Icon(Icons.Default.VideoLibrary, contentDescription = null) },
-                        label = { Text("Streams") }
+                        label = { Text("Streams", fontWeight = if (selectedTab == 1) FontWeight.SemiBold else FontWeight.Normal) },
+                        colors = navItemColors
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
                         onClick = { selectedTab = 2 },
                         icon = { Icon(Icons.Default.Groups, contentDescription = null) },
-                        label = { Text("Comunidades") }
+                        label = { Text("Comunidades", fontWeight = if (selectedTab == 2) FontWeight.SemiBold else FontWeight.Normal) },
+                        colors = navItemColors
                     )
                     NavigationBarItem(
                         selected = selectedTab == 3,
                         onClick = { selectedTab = 3 },
                         icon = { Icon(Icons.Default.Tv, contentDescription = null) },
-                        label = { Text("Canal") }
+                        label = { Text("Canal", fontWeight = if (selectedTab == 3) FontWeight.SemiBold else FontWeight.Normal) },
+                        colors = navItemColors
                     )
                     NavigationBarItem(
                         selected = selectedTab == 4,
                         onClick = { selectedTab = 4 },
                         icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                        label = { Text("Perfil") }
+                        label = { Text("Perfil", fontWeight = if (selectedTab == 4) FontWeight.SemiBold else FontWeight.Normal) },
+                        colors = navItemColors
                     )
                 } else {
                     NavigationBarItem(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
-                        icon = { Icon(Icons.Default.Subscriptions, contentDescription = null) },
-                        label = { Text("Suscrito") }
+                        icon = { Icon(Icons.Default.Groups, contentDescription = null) },
+                        label = { Text("Comunidades", fontWeight = if (selectedTab == 1) FontWeight.SemiBold else FontWeight.Normal) },
+                        colors = navItemColors
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
                         onClick = { selectedTab = 2 },
-                        icon = { Icon(Icons.Default.History, contentDescription = null) },
-                        label = { Text("Historial") }
+                        icon = { Icon(Icons.Default.Subscriptions, contentDescription = null) },
+                        label = { Text("Suscrito", fontWeight = if (selectedTab == 2) FontWeight.SemiBold else FontWeight.Normal) },
+                        colors = navItemColors
                     )
                     NavigationBarItem(
                         selected = selectedTab == 3,
                         onClick = { selectedTab = 3 },
-                        icon = { Icon(Icons.Default.LiveTv, contentDescription = null) },
-                        label = { Text("Canales") }
+                        icon = { Icon(Icons.Default.History, contentDescription = null) },
+                        label = { Text("Historial", fontWeight = if (selectedTab == 3) FontWeight.SemiBold else FontWeight.Normal) },
+                        colors = navItemColors
                     )
                     NavigationBarItem(
                         selected = selectedTab == 4,
                         onClick = { selectedTab = 4 },
                         icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                        label = { Text("Perfil") }
+                        label = { Text("Perfil", fontWeight = if (selectedTab == 4) FontWeight.SemiBold else FontWeight.Normal) },
+                        colors = navItemColors
                     )
                 }
             }
@@ -153,14 +177,17 @@ fun MainScreen(
                         onNavigateToStream = { navController.navigate(Screen.StreamDetail.createRoute(it)) },
                         viewModel = streamViewModel
                     )
-                    1 -> SubscriptionsScreen(
+                    1 -> CommunitiesScreen(
+                        onCommunityClick = { navController.navigate(Screen.CommunityDetail.createRoute(it)) },
+                        onBack = {}
+                    )
+                    2 -> SubscriptionsScreen(
                         onNavigateToStream = { navController.navigate(Screen.StreamDetail.createRoute(it)) },
                         viewModel = streamViewModel
                     )
-                    2 -> HistoryScreen(
+                    3 -> HistoryScreen(
                         onNavigateToStream = { navController.navigate(Screen.StreamDetail.createRoute(it)) }
                     )
-                    3 -> FollowerFeedScreen()
                     4 -> ProfileScreen(
                         onLogout = onLogout,
                         onNavigateToFollowers = { navController.navigate(Screen.FollowersList.route) },

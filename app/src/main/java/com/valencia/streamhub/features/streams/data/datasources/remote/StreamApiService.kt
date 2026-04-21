@@ -1,6 +1,7 @@
 package com.valencia.streamhub.features.streams.data.datasources.remote
 
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.CreateStreamRequest
+import com.valencia.streamhub.features.streams.data.datasources.remote.model.CreateStreamResponse
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.JoinStreamResponse
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.StartStreamResponse
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.StreamResponse
@@ -15,8 +16,11 @@ interface StreamApiService {
     @GET("api/streams/")
     suspend fun getStreams(): List<StreamResponse>
 
+    @GET("api/streams/{id}")
+    suspend fun getStream(@Path("id") id: String): StreamResponse
+
     @POST("api/streams/")
-    suspend fun createStream(@Body request: CreateStreamRequest): StreamResponse
+    suspend fun createStream(@Body request: CreateStreamRequest): CreateStreamResponse
 
     @PUT("api/streams/{id}/start")
     suspend fun startStream(@Path("id") id: String): StartStreamResponse

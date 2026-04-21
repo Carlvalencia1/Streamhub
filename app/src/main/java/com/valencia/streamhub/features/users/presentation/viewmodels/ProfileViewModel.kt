@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.valencia.streamhub.core.session.ThemeManager
 import com.valencia.streamhub.core.session.TokenManager
+import com.valencia.streamhub.features.followers.domain.FollowerRepository
 import com.valencia.streamhub.features.users.domain.entities.AuthResult
 import com.valencia.streamhub.features.users.domain.usecases.UpdateProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +24,8 @@ data class ProfileState(
 class ProfileViewModel @Inject constructor(
     private val tokenManager: TokenManager,
     private val themeManager: ThemeManager,
-    private val updateProfileUseCase: UpdateProfileUseCase
+    private val updateProfileUseCase: UpdateProfileUseCase,
+    private val followerRepository: FollowerRepository
 ) : ViewModel() {
 
     val username: String get() = tokenManager.getUsername() ?: "Usuario"
@@ -32,10 +34,31 @@ class ProfileViewModel @Inject constructor(
     val nickname: String get() = tokenManager.getNickname() ?: ""
     val bio: String get() = tokenManager.getBio() ?: ""
     val location: String get() = tokenManager.getLocation() ?: ""
-    val followersCount: Int get() = tokenManager.getFollowersCount()
-    val followingCount: Int get() = tokenManager.getFollowingCount()
     val role: String get() = tokenManager.getRole()
     val streamCount: Int get() = tokenManager.getStreamCount()
+
+    private val _followersCount = MutableStateFlow(tokenManager.getFollowersCount())
+    val followersCount: StateFlow<Int> = _followersCount.asStateFlow()
+
+    private val _followingCount = MutableStateFlow(tokenManager.getFollowingCount())
+    val followingCount: StateFlow<Int> = _followingCount.asStateFlow()
+
+    fun refreshCounts() {
+        val myId = userId
+        if (myId.isBlank()) return
+        viewModelScope.launch {
+            try {
+                val count = followerRepository.getFollowerCount(myId)
+                _followersCount.value = count
+            } catch (_: Exception) {}
+        }
+        viewModelScope.launch {
+            try {
+                val list = followerRepository.getMyFollowing()
+                _followingCount.value = list.size
+            } catch (_: Exception) {}
+        }
+    }
 
     // La foto efectiva: primero URI local, luego URL remota
     val effectiveAvatarUri: String?

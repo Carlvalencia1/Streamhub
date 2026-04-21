@@ -32,7 +32,8 @@ data class ChatMessage(
     val content: String?,
     val mediaUrl: String?,
     val poll: com.valencia.streamhub.features.channelposts.domain.Poll?,
-    val createdAt: String
+    val createdAt: String,
+    val myReaction: String? = null
 )
 
 interface CommunityRepository {
@@ -53,4 +54,5 @@ interface CommunityRepository {
     suspend fun deleteMessage(communityId: String, channelId: String, messageId: String)
     suspend fun setDisappearing(communityId: String, channelId: String, ttlSeconds: Int)
     suspend fun votePoll(pollId: String, optionIndex: Int): com.valencia.streamhub.features.channelposts.domain.Poll?
+    suspend fun reactToMessage(communityId: String, channelId: String, messageId: String, emoji: String)
 }

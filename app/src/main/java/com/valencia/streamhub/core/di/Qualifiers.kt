@@ -5,3 +5,7 @@ import javax.inject.Qualifier
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class StreamhubRetrofit
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class BaseUrl

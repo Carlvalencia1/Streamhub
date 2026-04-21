@@ -5,6 +5,14 @@ import com.valencia.streamhub.features.streams.domain.entities.StreamResult
 import com.valencia.streamhub.features.streams.domain.repositories.StreamRepository
 import javax.inject.Inject
 
+class GetStreamByIdUseCase @Inject constructor(
+    private val streamRepository: StreamRepository
+) {
+    suspend operator fun invoke(id: String): StreamResult<Stream> {
+        return streamRepository.getStreamById(id)
+    }
+}
+
 class GetStreamsUseCase @Inject constructor(
     private val streamRepository: StreamRepository
 ) {

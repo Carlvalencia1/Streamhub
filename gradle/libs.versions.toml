@@ -24,6 +24,8 @@ googleServices = "4.4.2"
 firebaseBom = "33.7.0"
 workManager = "2.10.0"
 streamWebrtc = "1.1.2"
+media3 = "1.5.1"
+streampack = "2.6.1"
 credentials = "1.5.0"
 googleIdentity = "1.1.1"
 
@@ -61,6 +63,11 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 stream-webrtc = { group = "io.getstream", name = "stream-webrtc-android", version.ref = "streamWebrtc" }
+media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
+media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3" }
+media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
+streampack-core = { group = "io.github.thibaultbee", name = "streampack", version.ref = "streampack" }
+streampack-rtmp = { group = "io.github.thibaultbee", name = "streampack-extension-rtmp", version.ref = "streampack" }
 credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 google-identity-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleIdentity" }

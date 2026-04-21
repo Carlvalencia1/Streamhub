@@ -1,6 +1,10 @@
 package com.valencia.streamhub.features.communities.presentation.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +26,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.valencia.streamhub.features.communities.domain.Channel
+import com.valencia.streamhub.features.communities.domain.Community
 import com.valencia.streamhub.features.communities.presentation.CommunityViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +41,7 @@ fun CommunityDetailScreen(
     val state by viewModel.detailState.collectAsStateWithLifecycle()
     var showAddChannel by remember { mutableStateOf(false) }
     var showMembers by remember { mutableStateOf(false) }
+    var showEdit by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val currentUserId = remember {
@@ -49,12 +56,18 @@ fun CommunityDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(state.detail?.community?.name ?: "Comunidad") },
+                title = { Text(state.detail?.community?.name ?: "Comunidad", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null) }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
                 actions = {
                     if (isAdmin) {
+                        IconButton(onClick = { showEdit = true }) {
+                            Icon(Icons.Default.Edit, "Editar comunidad")
+                        }
                         IconButton(onClick = { showAddChannel = true }) {
                             Icon(Icons.Default.Add, "Nuevo canal")
                         }
@@ -190,6 +203,22 @@ fun CommunityDetailScreen(
             }
         )
     }
+
+    if (showEdit && isAdmin) {
+        val community = state.detail?.community
+        if (community != null) {
+            EditCommunityDialog(
+                community = community,
+                viewModel = viewModel,
+                onDismiss = { showEdit = false },
+                onSave = { name, desc, imageUrl ->
+                    viewModel.updateCommunity(communityId, name, desc, imageUrl) {
+                        showEdit = false
+                    }
+                }
+            )
+        }
+    }
 }
 
 @Composable
@@ -228,6 +257,95 @@ private fun ChannelListItem(
         }
     }
     HorizontalDivider(modifier = Modifier.padding(start = 68.dp))
+}
+
+@Composable
+private fun EditCommunityDialog(
+    community: Community,
+    viewModel: CommunityViewModel,
+    onDismiss: () -> Unit,
+    onSave: (String, String?, String?) -> Unit
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var name by remember { mutableStateOf(community.name) }
+    var description by remember { mutableStateOf(community.description ?: "") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var isUploading by remember { mutableStateOf(false) }
+
+    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        imageUri = uri
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar comunidad") },
+        text = {
+            Column {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                        .clickable { imagePicker.launch("image/*") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    val displayModel: Any? = imageUri ?: community.imageUrl?.takeIf { it.isNotBlank() }
+                    if (displayModel != null) {
+                        AsyncImage(
+                            model = displayModel,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(Icons.Default.AddPhotoAlternate, contentDescription = "Imagen",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(32.dp))
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nombre") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Descripción (opcional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3
+                )
+            }
+        },
+        confirmButton = {
+            if (isUploading) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            } else {
+                TextButton(
+                    onClick = {
+                        if (name.isNotBlank()) {
+                            scope.launch {
+                                isUploading = true
+                                val uploadedUrl = imageUri?.let { uri ->
+                                    val mime = context.contentResolver.getType(uri) ?: "image/jpeg"
+                                    viewModel.uploadImage(uri, mime)
+                                } ?: community.imageUrl
+                                isUploading = false
+                                onSave(name, description.ifBlank { null }, uploadedUrl)
+                            }
+                        }
+                    },
+                    enabled = name.isNotBlank()
+                ) { Text("Guardar") }
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+    )
 }
 
 @Composable

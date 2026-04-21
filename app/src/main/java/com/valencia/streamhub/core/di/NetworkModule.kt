@@ -15,6 +15,13 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    private const val BACKEND_HOST = "10.78.168.227:8080"
+
+    @Provides
+    @Singleton
+    @BaseUrl
+    fun provideBaseUrl(): String = "http://$BACKEND_HOST/"
+
     @Provides
     @Singleton
     fun provideOkHttpClient(tokenManager: TokenManager): OkHttpClient {
@@ -27,9 +34,9 @@ object NetworkModule {
     @Provides
     @Singleton
     @StreamhubRetrofit
-    fun provideStreamhubRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideStreamhubRetrofit(@BaseUrl baseUrl: String, okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://10.236.32.23:8080/")
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

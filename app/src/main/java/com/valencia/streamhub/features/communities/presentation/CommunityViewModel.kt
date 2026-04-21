@@ -30,7 +30,8 @@ data class CommunityDetailState(
 data class ChatState(
     val messages: List<ChatMessage> = emptyList(),
     val isLoading: Boolean = false,
-    val isSending: Boolean = false
+    val isSending: Boolean = false,
+    val reactions: Map<String, String> = emptyMap()
 )
 
 @HiltViewModel
@@ -82,6 +83,21 @@ class CommunityViewModel @Inject constructor(
             }
         }
     }
+
+    fun updateCommunity(id: String, name: String, description: String?, imageUrl: String?, onDone: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.updateCommunity(id, name, description, imageUrl)
+                loadCommunity(id)
+                onDone()
+            } catch (e: Exception) {
+                _detailState.value = _detailState.value.copy(error = e.message)
+            }
+        }
+    }
+
+    suspend fun uploadImage(uri: Uri, mimeType: String): String? =
+        uploadRepository.uploadFile(uri, mimeType)
 
     fun joinByCode(code: String, onDone: (String) -> Unit) {
         viewModelScope.launch {
@@ -141,7 +157,17 @@ class CommunityViewModel @Inject constructor(
         viewModelScope.launch {
             _chatState.value = _chatState.value.copy(isLoading = true)
             val msgs = repository.getMessages(currentCommunityId, currentChannelId)
-            _chatState.value = ChatState(messages = msgs)
+            val reactionsMap = msgs.mapNotNull { it.myReaction?.let { emoji -> it.id to emoji } }.toMap()
+            _chatState.value = ChatState(messages = msgs, reactions = reactionsMap)
+        }
+    }
+
+    fun reactToMessage(messageId: String, emoji: String) {
+        viewModelScope.launch {
+            repository.reactToMessage(currentCommunityId, currentChannelId, messageId, emoji)
+            _chatState.value = _chatState.value.copy(
+                reactions = _chatState.value.reactions + (messageId to emoji)
+            )
         }
     }
 

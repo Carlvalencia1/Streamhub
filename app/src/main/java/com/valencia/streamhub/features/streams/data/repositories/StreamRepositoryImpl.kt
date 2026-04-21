@@ -13,6 +13,16 @@ class StreamRepositoryImpl @Inject constructor(
     private val streamApiService: StreamApiService
 ) : StreamRepository {
 
+    override suspend fun getStreamById(id: String): StreamResult<Stream> {
+        return try {
+            StreamResult.Success(streamApiService.getStream(id).toDomain())
+        } catch (e: HttpException) {
+            StreamResult.Error("Error ${e.code()}: ${e.response()?.errorBody()?.string() ?: ""}")
+        } catch (e: Exception) {
+            StreamResult.Error(e.message ?: "Error desconocido")
+        }
+    }
+
     override suspend fun getStreams(): StreamResult<List<Stream>> {
         return try {
             val response = streamApiService.getStreams()

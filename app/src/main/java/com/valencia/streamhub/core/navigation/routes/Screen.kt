@@ -1,5 +1,7 @@
 package com.valencia.streamhub.core.navigation.routes
 
+import android.net.Uri
+
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
@@ -8,6 +10,10 @@ sealed class Screen(val route: String) {
     object CreateStream : Screen("create_stream")
     object StreamDetail : Screen("stream/{streamId}") {
         fun createRoute(streamId: String) = "stream/$streamId"
+    }
+    object Broadcasting : Screen("broadcasting/{streamId}/{rtmpUrl}") {
+        fun createRoute(streamId: String, rtmpUrl: String) =
+            "broadcasting/$streamId/${Uri.encode(rtmpUrl)}"
     }
     object FollowersList : Screen("followers_list")
     object FollowingList : Screen("following_list")

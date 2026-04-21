@@ -1,5 +1,6 @@
 package com.valencia.streamhub.features.streams.data.datasources.remote.mapper
 
+import com.valencia.streamhub.features.streams.data.datasources.remote.model.CreateStreamResponse
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.StreamResponse
 import com.valencia.streamhub.features.streams.domain.entities.Stream
 import java.util.UUID
@@ -14,5 +15,24 @@ fun StreamResponse.toDomain(): Stream = Stream(
     viewersCount = viewers_count,
     isLive = is_live,
     startedAt = started_at,
-    createdAt = created_at ?: ""
+    createdAt = created_at ?: "",
+    streamKey = stream_key,
+    playbackUrl = playback_url,
+    recordingUrl = recording_url
+)
+
+fun CreateStreamResponse.toDomain(): Stream = Stream(
+    id = id?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString(),
+    title = title ?: "",
+    description = null,
+    thumbnailUrl = null,
+    category = null,
+    ownerId = "",
+    viewersCount = 0,
+    isLive = false,
+    startedAt = null,
+    createdAt = "",
+    rtmpUrl = rtmpUrl,
+    streamKey = streamKey,
+    playbackUrl = playbackUrl
 )

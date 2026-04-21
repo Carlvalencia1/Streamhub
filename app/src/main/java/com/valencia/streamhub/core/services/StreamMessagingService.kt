@@ -51,6 +51,11 @@ class StreamMessagingService : FirebaseMessagingService() {
                 val message = data["message"] ?: DEFAULT_MESSAGE
                 handleNotification(title, message)
             }
+            "new_follower" -> {
+                val title = data["title"] ?: "Nuevo seguidor"
+                val message = data["message"] ?: "Tienes un nuevo seguidor"
+                handleNotification(title, message)
+            }
             else -> Log.d(TAG, "Tipo de mensaje desconocido")
         }
     }
