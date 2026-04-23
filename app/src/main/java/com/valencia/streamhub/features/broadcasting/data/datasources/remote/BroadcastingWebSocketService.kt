@@ -2,6 +2,7 @@ package com.valencia.streamhub.features.broadcasting.data.datasources.remote
 
 import android.util.Log
 import com.google.gson.Gson
+import com.valencia.streamhub.core.network.BackendConfig
 import com.valencia.streamhub.features.broadcasting.domain.entities.BroadcastingEvent
 import com.valencia.streamhub.features.broadcasting.data.datasources.remote.model.SignalingMessageDto
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -34,7 +35,7 @@ class BroadcastingWebSocketService @Inject constructor(
     override fun connect(streamId: String, token: String): SharedFlow<BroadcastingEvent> {
         disconnect()
 
-        val url = "ws://3.232.197.126:8081/ws/broadcast/$streamId?token=$token"
+        val url = "${BackendConfig.WS_BASE_URL}/ws/broadcast/$streamId?token=$token"
         Log.d("BroadcastWS", "Conectando a: $url")
 
         val request = Request.Builder()
@@ -115,4 +116,3 @@ class BroadcastingWebSocketService @Inject constructor(
         webSocket = null
     }
 }
-

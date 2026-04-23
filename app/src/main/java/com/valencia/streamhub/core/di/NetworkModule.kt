@@ -1,6 +1,7 @@
 package com.valencia.streamhub.core.di
 
 import com.valencia.streamhub.core.session.TokenManager
+import com.valencia.streamhub.core.network.BackendConfig
 import com.valencia.streamhub.features.users.data.datasources.remote.AuthInterceptor
 import dagger.Module
 import dagger.Provides
@@ -15,12 +16,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BACKEND_HOST = "10.78.168.227:8080"
-
     @Provides
     @Singleton
     @BaseUrl
-    fun provideBaseUrl(): String = "http://$BACKEND_HOST/"
+    fun provideBaseUrl(): String = BackendConfig.API_BASE_URL
 
     @Provides
     @Singleton

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.valencia.streamhub.core.database.dao.StreamDao
 import com.valencia.streamhub.core.database.mappers.toEntity
+import com.valencia.streamhub.core.hardware.domain.NotificacionManager
 import com.valencia.streamhub.core.session.TokenManager
 import com.valencia.streamhub.features.streams.domain.entities.Stream
 import com.valencia.streamhub.features.streams.domain.entities.StreamResult
@@ -45,7 +46,8 @@ class StreamViewModel @Inject constructor(
     private val stopStreamUseCase: StopStreamUseCase,
     private val joinStreamUseCase: JoinStreamUseCase,
     private val tokenManager: TokenManager,
-    private val streamDao: StreamDao
+    private val streamDao: StreamDao,
+    private val notificationManager: NotificacionManager
 ) : ViewModel() {
 
     private val _streamState = MutableStateFlow(StreamState())
@@ -142,6 +144,14 @@ class StreamViewModel @Inject constructor(
             when (val result = startStreamUseCase(id)) {
                 is StreamResult.Success -> {
                     _streamState.value = _streamState.value.copy(isLoading = false, isStarted = true)
+                    val startedStream = _streamState.value.streams.firstOrNull { it.id == id }
+                    notificationManager.mostrarNotificacion(
+                        title = "¡Stream iniciado!",
+                        message = startedStream?.title?.let { "Ya iniciaste '$it'" }
+                            ?: "Ya iniciaste tu stream",
+                        onSuccess = {},
+                        onError = {}
+                    )
                     loadStreams()
                 }
                 is StreamResult.Error -> {

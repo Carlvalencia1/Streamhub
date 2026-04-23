@@ -58,7 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.valencia.streamhub.features.streams.presentation.components.StreamCard
@@ -314,6 +314,9 @@ fun HomeScreen(
                                     onStopClick = { id -> viewModel.stopStream(id) },
                                     onJoinClick = { id -> onNavigateToStream(id) },
                                     isFollowing = followerState.followingIds.contains(stream.ownerId),
+                                    onCardClick = if (stream.ownerId == currentUserId && !stream.isLive) {
+                                        { viewModel.startStream(stream.id) }
+                                    } else null,
                                     onFollowClick = { ownerId ->
                                         followerViewModel.toggleFollow(ownerId)
                                     }

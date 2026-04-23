@@ -2,6 +2,7 @@ package com.valencia.streamhub.core.work
 
 import android.content.Context
 import android.util.Log
+import androidx.core.content.edit
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -12,6 +13,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.firebase.messaging.FirebaseMessaging
+import com.valencia.streamhub.core.network.BackendConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -57,7 +59,7 @@ class FcmTokenSyncWorker(
 
             val body = json.toRequestBody("application/json".toMediaType())
             val request = Request.Builder()
-                .url("http://10.88.128.227:8080/api/notifications/fcm-token")
+                .url("${BackendConfig.API_BASE_URL}api/notifications/fcm-token")
                 .addHeader("Authorization", "Bearer $authToken")
                 .post(body)
                 .build()
@@ -67,7 +69,9 @@ class FcmTokenSyncWorker(
 
             if (response.isSuccessful) {
                 Log.d(TAG, "Token FCM registrado en backend.")
-                prefs.edit().putString(KEY_LAST_SYNCED_TOKEN, token).apply()
+                prefs.edit {
+                    putString(KEY_LAST_SYNCED_TOKEN, token)
+                }
                 Result.success()
             } else {
                 Log.w(TAG, "Error del backend al registrar token: ${response.code}")
@@ -88,10 +92,23 @@ class FcmTokenSyncWorker(
 
         fun forceSync(context: Context) {
             // Clear cached token so the worker sends it even if "already synced"
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .edit().remove(KEY_LAST_SYNCED_TOKEN).apply()
-            FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-                if (token.isNotBlank()) enqueue(context, token)
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+                remove(KEY_LAST_SYNCED_TOKEN)
+            }
+            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                    return@addOnCompleteListener
+                }
+
+                val token = task.result
+                if (token.isNullOrBlank()) {
+                    Log.w(TAG, "FCM token vacío. No se puede sincronizar.")
+                    return@addOnCompleteListener
+                }
+
+                Log.d(TAG, "FCM token obtenido: $token")
+                enqueue(context, token)
             }
         }
 

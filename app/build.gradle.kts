@@ -113,7 +113,8 @@ dependencies {
     implementation(libs.streampack.rtmp)                           // RTMP streaming
     implementation(libs.credentials)                               // Credential Manager
     implementation(libs.credentials.play.services.auth)            // Google Play Services Auth
-    implementation(libs.google.identity.googleid)                  // Google ID
+    implementation(libs.google.identity.googleid)
+    // Google ID
 
 
     testImplementation(libs.junit)

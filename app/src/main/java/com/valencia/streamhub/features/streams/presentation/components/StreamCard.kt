@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FiberManualRecord
@@ -51,16 +52,19 @@ fun StreamCard(
     onStartClick: (String) -> Unit,
     onStopClick: (String) -> Unit,
     onJoinClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
     isFollowing: Boolean = false,
     onFollowClick: ((String) -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onCardClick: (() -> Unit)? = null
 ) {
     val isOwner = stream.ownerId == currentUserId
+    val cardModifier = modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 6.dp)
+        .let { base -> if (onCardClick != null) base.clickable(onClick = onCardClick) else base }
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+        modifier = cardModifier,
         shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         colors = CardDefaults.cardColors(

@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.valencia.streamhub" />
+                  <option name="mobileSdkAppId" value="1:1068720933684:android:32dfdb31b5ecef65a33361" />
+                  <option name="projectId" value="stream-c1c41" />
+                  <option name="projectNumber" value="1068720933684" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

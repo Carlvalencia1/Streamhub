@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import android.util.Log
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.valencia.streamhub.core.work.FcmTokenSyncWorker
@@ -36,7 +37,9 @@ import com.valencia.streamhub.features.users.presentation.viewmodels.AuthViewMod
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    pendingStreamId: String? = null,
+    onStreamNavigationHandled: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val startDestination = remember {
@@ -56,6 +59,31 @@ fun AppNavGraph(
         if (startDestination == Screen.Main.route) {
             FcmTokenSyncWorker.forceSync(context)
         }
+    }
+
+    // Si llega stream_id desde push y ya hay sesión activa, abre el detalle del stream.
+    LaunchedEffect(pendingStreamId, startDestination) {
+        val streamId = pendingStreamId?.trim().orEmpty()
+        if (streamId.isBlank()) {
+            Log.d(TAG, "[FCM_NAV] skipped reason=empty_stream_id")
+            return@LaunchedEffect
+        }
+        if (startDestination != Screen.Main.route) {
+            Log.d(TAG, "[FCM_NAV] skipped reason=not_logged_in stream_id=$streamId")
+            return@LaunchedEffect
+        }
+
+        if (navController.currentDestination?.route != Screen.Main.route) {
+            Log.d(TAG, "[FCM_NAV] redirect route=${Screen.Main.route} stream_id=$streamId")
+            navController.navigate(Screen.Main.route) { launchSingleTop = true }
+            delay(150)
+        }
+
+        Log.d(TAG, "[FCM_NAV] open route=${Screen.StreamDetail.route} stream_id=$streamId")
+        navController.navigate(Screen.StreamDetail.createRoute(streamId)) {
+            launchSingleTop = true
+        }
+        onStreamNavigationHandled()
     }
 
     NavHost(
@@ -233,3 +261,6 @@ fun AppNavGraph(
         }
     }
 }
+
+private const val TAG = "AppNavGraph"
+

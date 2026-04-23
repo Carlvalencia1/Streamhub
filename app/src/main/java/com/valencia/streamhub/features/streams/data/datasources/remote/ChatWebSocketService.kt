@@ -2,6 +2,7 @@ package com.valencia.streamhub.features.streams.data.datasources.remote
 
 import android.util.Log
 import com.google.gson.Gson
+import com.valencia.streamhub.core.network.BackendConfig
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.ChatMessageDto
 import com.valencia.streamhub.features.streams.data.datasources.remote.model.SendMessageDto
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -36,7 +37,7 @@ class ChatWebSocketService @Inject constructor(
     fun connect(streamId: String, token: String) {
         disconnect()
 
-        val url = "ws://10.78.168.227:8080/ws/chat/$streamId?token=$token"
+        val url = "${BackendConfig.WS_BASE_URL}/ws/chat/$streamId?token=$token"
         Log.d("ChatWS", "Conectando a: $url")
 
         val request = Request.Builder()
@@ -92,4 +93,3 @@ class ChatWebSocketService @Inject constructor(
         _connectionState.value = ConnectionState.DISCONNECTED
     }
 }
-
