@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.valencia.streamhub" />
-                  <option name="mobileSdkAppId" value="1:1068720933684:android:32dfdb31b5ecef65a33361" />
-                  <option name="projectId" value="stream-c1c41" />
-                  <option name="projectNumber" value="1068720933684" />
+                  <option name="mobileSdkAppId" value="1:552804809383:android:33e3331328353fd57db982" />
+                  <option name="projectId" value="streamhub-64704" />
+                  <option name="projectNumber" value="552804809383" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

@@ -15,8 +15,91 @@ import androidx.core.content.ContextCompat
 import com.valencia.streamhub.R
 import dagger.hilt.android.AndroidEntryPoint
 
+import android.content.pm.PackageManager
+import android.util.Log
+import androidx.core.app.NotificationManagerCompat
+
 @AndroidEntryPoint
 class StreamBroadcastForegroundService : Service() {
+
+    private fun handleNotification(title: String, message: String, streamId: String? = null) {
+        val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+            ?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                streamId?.let { putExtra(EXTRA_STREAM_ID, it) }
+            } ?: return
+
+        Log.d(TAG, "[FCM_NOTIFY] stream_id=${streamId.orEmpty()} title=$title message=$message")
+
+        val pendingIntent = PendingIntent.getActivity(
+            this, streamId?.hashCode() ?: 0, launchIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notificationManager = getSystemService(NotificationManager::class.java)
+
+        // 🔧 Crear canal con la importancia más alta posible
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                FCM_CHANNEL_ID,
+                FCM_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notificaciones de StreamHub"
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 300, 200, 300)
+                setShowBadge(true)
+                importance = NotificationManager.IMPORTANCE_HIGH
+                // Para algunos dispositivos chinos:
+                setBypassDnd(true)  // Ignorar "No molestar"
+            }
+            notificationManager.createNotificationChannel(channel)
+            // Verificar que el canal se creó correctamente
+            val createdChannel = notificationManager.getNotificationChannel(FCM_CHANNEL_ID)
+            Log.d(TAG, "Canal creado: importance=${createdChannel?.importance}")
+        }
+
+        // 🔧 SOLUCIÓN PRINCIPAL: Usar un ícono que SEGURO que existe
+        val smallIcon = try {
+            // Intentar varios drawables comunes
+            when {
+                try { R.drawable.ic_notification; true } catch (e: Exception) { false } -> R.drawable.ic_notification
+                //try { R.drawable.ic_stat_notify; true } catch (e: Exception) { false } -> R.drawable.ic_stat_notify
+                else -> {
+                    // Fallback: usar el launcher icon (SIEMPRE existe)
+                    android.R.drawable.ic_dialog_info  // Ícono del sistema como último recurso
+                }
+            }
+        } catch (e: Exception) {
+            android.R.drawable.ic_dialog_info
+        }
+
+        val notification = NotificationCompat.Builder(this, FCM_CHANNEL_ID)
+            .setSmallIcon(smallIcon)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_MAX)  // ← MAX en lugar de HIGH
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)  // Sonido, vibración, luces
+            .build()
+
+        // Verificar permiso Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "[FCM_NOTIFY] Permiso POST_NOTIFICATIONS no concedido")
+                return
+            }
+        }
+
+        // ID único para cada notificación
+        val notificationId = streamId?.hashCode() ?: (System.currentTimeMillis() % 100000).toInt()
+        // Forzar que se muestre incluso si la app está en foreground
+        NotificationManagerCompat.from(this).notify(notificationId, notification)
+        Log.i(FCM_STREAM_TAG, "Notificación mostrada: id=$notificationId, title=$title")
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -112,6 +195,11 @@ class StreamBroadcastForegroundService : Service() {
         const val ACTION_STOP = "com.valencia.streamhub.action.STOP_BROADCAST_SERVICE"
         const val EXTRA_TITLE = "extra_title"
         const val EXTRA_MESSAGE = "extra_message"
+        const val EXTRA_STREAM_ID = "extra_stream_id"
+        private const val TAG = "StreamBroadcastForegroundService"
+        private const val FCM_STREAM_TAG = "FCMSTREAM"
+        private const val FCM_CHANNEL_ID = "streamhub_fcm_notifications"
+        private const val FCM_CHANNEL_NAME = "Streamhub Notifications"
         private const val CHANNEL_ID = "streamhub_broadcast_service"
         private const val CHANNEL_NAME = "Stream Broadcasting"
         private const val NOTIFICATION_ID = 4201

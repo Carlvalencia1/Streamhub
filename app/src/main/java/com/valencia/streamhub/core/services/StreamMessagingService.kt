@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -29,10 +30,26 @@ import org.json.JSONObject
 
 class StreamMessagingService : FirebaseMessagingService() {
 
+    init {
+        Log.d(TAG, "🏁 Servicio StreamMessagingService INICIALIZADO - Constructor ejecutado")
+    }
+
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    override fun onCreate() {
+        super.onCreate()
+        Log.d(TAG, "🔥 onCreate() del servicio ejecutado - Servicio listo para recibir mensajes")
+    }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
+
+        // LOG MUY VISIBLE
+        Log.e("!!!FCM!!!", "================== MENSAJE RECIBIDO ==================")
+        Log.e("!!!FCM!!!", "Título: ${remoteMessage.notification?.title}")
+        Log.e("!!!FCM!!!", "Cuerpo: ${remoteMessage.notification?.body}")
+        Log.e("!!!FCM!!!", "Data: ${remoteMessage.data}")
+
         Log.d(TAG, "[FCM_RECEIVE] from=${remoteMessage.from} messageId=${remoteMessage.messageId}")
 
         if (remoteMessage.data.isNotEmpty()) {
@@ -58,6 +75,7 @@ class StreamMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
+        Log.d(TAG, "🔥 onNewToken() llamado con token: $token")
         Log.d(TAG, "Token FCM refresheado: $token")
         syncTokenImmediately(token)
     }
@@ -65,6 +83,7 @@ class StreamMessagingService : FirebaseMessagingService() {
     override fun onDestroy() {
         super.onDestroy()
         serviceScope.cancel()
+        Log.d(TAG, "🛑 Servicio destruido")
     }
 
     private fun handleDataMessage(data: Map<String, String>) {
@@ -111,7 +130,7 @@ class StreamMessagingService : FirebaseMessagingService() {
 
     private fun handleBroadcastStart(data: Map<String, String>) {
         val streamId = streamIdOf(data).orEmpty()
-        val streamTitle = valueOf(data, KEY_STREAM_TITLE, "stream_title") .orEmpty()
+        val streamTitle = valueOf(data, KEY_STREAM_TITLE, "stream_title").orEmpty()
         handleNotification(
             title = "Stream en vivo",
             message = if (streamTitle.isNotBlank()) "$streamTitle esta en vivo" else "Hay un stream en vivo ahora",
@@ -141,27 +160,46 @@ class StreamMessagingService : FirebaseMessagingService() {
         Log.d(TAG, "[FCM_NOTIFY] stream_id=${streamId.orEmpty()} title=$title")
 
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, launchIntent,
+            this, streamId?.hashCode() ?: 0, launchIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val notificationManager = getSystemService(NotificationManager::class.java)
 
+        // Crear canal con importancia ALTA
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                NotificationChannel(FCM_CHANNEL_ID, FCM_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH)
-            )
+            val channel = NotificationChannel(
+                FCM_CHANNEL_ID,
+                FCM_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notificaciones de StreamHub"
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 300, 200, 300)
+                setShowBadge(true)
+                lightColor = Color.parseColor("#4CAF50")
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        // Usar ícono de notificación
+        val smallIcon = try {
+            R.drawable.ic_notification
+        } catch (e: Exception) {
+            android.R.drawable.ic_dialog_info
         }
 
         val notification = NotificationCompat.Builder(this, FCM_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(smallIcon)
             .setContentTitle(title)
             .setContentText(message)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
 
+        // Verificar permiso para Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -174,9 +212,11 @@ class StreamMessagingService : FirebaseMessagingService() {
             }
         }
 
+        // ID único para cada notificación
+        val notificationId = streamId?.hashCode() ?: (System.currentTimeMillis() % 100000).toInt()
         NotificationManagerCompat.from(this)
-            .notify(streamId?.hashCode() ?: FCM_NOTIFICATION_ID, notification)
-        Log.i(FCM_STREAM_TAG, "event=notification_posted stream_id=${streamId.orEmpty()} title=$title")
+            .notify(notificationId, notification)
+        Log.i(FCM_STREAM_TAG, "event=notification_posted stream_id=${streamId.orEmpty()} title=$title notification_id=$notificationId")
     }
 
     private fun syncTokenImmediately(token: String) {
@@ -235,7 +275,6 @@ class StreamMessagingService : FirebaseMessagingService() {
         private const val FCM_STREAM_TAG = "FCMSTREAM"
         private const val FCM_CHANNEL_ID = "streamhub_fcm_notifications"
         private const val FCM_CHANNEL_NAME = "Streamhub Notifications"
-        private const val FCM_NOTIFICATION_ID = 4202
         private const val DEFAULT_TITLE = "Streamhub"
         private const val DEFAULT_MESSAGE = "Tienes un nuevo mensaje"
         private const val KEY_STREAM_ID = "stream_id"
