@@ -72,6 +72,9 @@ import com.valencia.streamhub.features.followers.presentation.FollowerViewModel
 import com.valencia.streamhub.features.streams.domain.entities.Stream
 import com.valencia.streamhub.features.streams.presentation.components.ChatBubble
 import com.valencia.streamhub.features.streams.presentation.components.ChatInput
+import com.valencia.streamhub.features.streams.workers.ClipCaptureWorker
+import androidx.compose.material.icons.filled.ContentCut
+import kotlinx.coroutines.delay
 import com.valencia.streamhub.features.streams.presentation.viewmodels.ChatViewModel
 
 @OptIn(UnstableApi::class)
@@ -86,6 +89,7 @@ fun StreamScreen(
     val followerState by followerViewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     var isFullscreen by remember { mutableStateOf(false) }
+    var clipQueued by remember { mutableStateOf(false) }
 
     val view = LocalView.current
     val activity = view.context as? Activity
@@ -128,6 +132,13 @@ fun StreamScreen(
                 WindowCompat.setDecorFitsSystemWindows(window, true)
                 WindowCompat.getInsetsController(window, view).show(WindowInsetsCompat.Type.systemBars())
             }
+        }
+    }
+
+    LaunchedEffect(clipQueued) {
+        if (clipQueued) {
+            delay(3_000)
+            clipQueued = false
         }
     }
 
@@ -261,6 +272,19 @@ fun StreamScreen(
                     IconButton(onClick = { isFullscreen = true }, modifier = Modifier.size(32.dp)) {
                         Icon(Icons.Filled.Fullscreen, contentDescription = "Pantalla completa", tint = Color.White)
                     }
+                    if (stream?.isLive == true) {
+                        IconButton(
+                            onClick = {
+                                playUrl?.let { url ->
+                                    ClipCaptureWorker.enqueue(view.context, url, stream.title)
+                                    clipQueued = true
+                                }
+                            },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(Icons.Filled.ContentCut, contentDescription = "Guardar clip", tint = Color.White)
+                        }
+                    }
                 }
             }
 
@@ -276,9 +300,33 @@ fun StreamScreen(
                     .align(Alignment.BottomStart)
                     .padding(horizontal = 12.dp, vertical = 10.dp)
             )
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AnimatedVisibility(
+                    visible = clipQueued,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Surface(
+                        color = Color.Black.copy(alpha = 0.78f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Guardando clip en galeria...",
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+            }
         }
 
-        // Streamer info row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
