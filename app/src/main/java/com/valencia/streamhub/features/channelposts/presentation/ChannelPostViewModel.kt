@@ -3,9 +3,8 @@ package com.valencia.streamhub.features.channelposts.presentation
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.valencia.streamhub.core.upload.UploadRepository
+import com.valencia.streamhub.features.streams.data.datasources.remote.upload.UploadRepository
 import com.valencia.streamhub.features.channelposts.data.ChannelPostRepository
-import com.valencia.streamhub.features.channelposts.domain.Poll
 import com.valencia.streamhub.features.channelposts.domain.Post
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

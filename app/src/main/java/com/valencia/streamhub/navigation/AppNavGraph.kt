@@ -1,5 +1,6 @@
-package com.valencia.streamhub.core.navigation
+package com.valencia.streamhub.navigation
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,7 +16,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.valencia.streamhub.core.navigation.routes.Screen
+import com.valencia.streamhub.navigation.routes.Screen
 import kotlinx.coroutines.delay
 import com.valencia.streamhub.features.communities.presentation.screens.CommunityDetailScreen
 import com.valencia.streamhub.features.communities.presentation.screens.CommunitiesScreen
@@ -43,7 +44,7 @@ fun AppNavGraph(
 ) {
     val context = LocalContext.current
     val startDestination = remember {
-        val prefs = context.getSharedPreferences("streamhub_prefs", android.content.Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences("streamhub_prefs", Context.MODE_PRIVATE)
         val token = prefs.getString("auth_token", null)
         val roleConfirmed = prefs.getBoolean("role_confirmed", false)
         val isRealToken = !token.isNullOrBlank() && !token.startsWith("google_local_")

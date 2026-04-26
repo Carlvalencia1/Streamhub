@@ -1,4 +1,4 @@
-package com.valencia.streamhub.core.navigation.routes
+package com.valencia.streamhub.navigation.routes
 
 import android.net.Uri
 

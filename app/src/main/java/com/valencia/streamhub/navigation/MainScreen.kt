@@ -1,5 +1,6 @@
-package com.valencia.streamhub.core.navigation
+package com.valencia.streamhub.navigation
 
+import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -7,7 +8,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material.icons.filled.Tv
@@ -31,14 +31,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.valencia.streamhub.core.navigation.routes.Screen
+import com.valencia.streamhub.navigation.routes.Screen
 import com.valencia.streamhub.features.communities.presentation.screens.CommunitiesScreen
 import com.valencia.streamhub.features.streams.presentation.screens.HistoryScreen
 import com.valencia.streamhub.features.streams.presentation.screens.HomeScreen
 import com.valencia.streamhub.features.streams.presentation.screens.MyStreamsScreen
 import com.valencia.streamhub.features.streams.presentation.screens.SubscriptionsScreen
 import com.valencia.streamhub.features.streams.presentation.viewmodels.StreamViewModel
-import com.valencia.streamhub.features.channelposts.presentation.FollowerFeedScreen
 import com.valencia.streamhub.features.channelposts.presentation.StreamerChannelScreen
 import com.valencia.streamhub.features.users.presentation.screens.ProfileScreen
 
@@ -54,7 +53,7 @@ fun MainScreen(
 
     val context = LocalContext.current
     val role = remember {
-        context.getSharedPreferences("streamhub_prefs", android.content.Context.MODE_PRIVATE)
+        context.getSharedPreferences("streamhub_prefs", Context.MODE_PRIVATE)
             .getString("user_role", "") ?: ""
     }
     val isStreamer = role == "streamer"

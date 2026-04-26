@@ -19,7 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.messaging.FirebaseMessaging
-import com.valencia.streamhub.core.navigation.AppNavGraph
+import com.valencia.streamhub.navigation.AppNavGraph
 import com.valencia.streamhub.core.ui.theme.AppTheme
 import com.valencia.streamhub.features.users.presentation.viewmodels.ThemeViewModel
 import dagger.hilt.android.AndroidEntryPoint

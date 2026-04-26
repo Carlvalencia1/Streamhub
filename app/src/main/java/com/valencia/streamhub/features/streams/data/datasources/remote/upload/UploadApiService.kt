@@ -1,4 +1,4 @@
-package com.valencia.streamhub.core.upload
+package com.valencia.streamhub.features.streams.data.datasources.remote.upload
 
 import com.google.gson.annotations.SerializedName
 import okhttp3.MultipartBody

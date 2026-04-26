@@ -1,4 +1,4 @@
-package com.valencia.streamhub.core.upload
+package com.valencia.streamhub.features.streams.data.datasources.remote.upload
 
 import android.content.Context
 import android.net.Uri

@@ -3,8 +3,7 @@ package com.valencia.streamhub.features.communities.presentation
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.valencia.streamhub.core.upload.UploadRepository
-import com.valencia.streamhub.features.channelposts.domain.Poll
+import com.valencia.streamhub.features.streams.data.datasources.remote.upload.UploadRepository
 import com.valencia.streamhub.features.communities.domain.ChatMessage
 import com.valencia.streamhub.features.communities.domain.Community
 import com.valencia.streamhub.features.communities.domain.CommunityDetail
